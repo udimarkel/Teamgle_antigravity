@@ -190,6 +190,11 @@ import { useRouter } from 'vue-router'
 const $q = useQuasar()
 const router = useRouter()
 
+// Extend the TodoTask type for local UI state
+interface TodoTaskWithUI extends TodoTask {
+    isEditing?: boolean;
+}
+
 const navigateToEvent = (id: string) => {
     router.push(`/events/${id}/dashboard`)
 }
@@ -197,7 +202,7 @@ const navigateToEvent = (id: string) => {
 // --- State ---
 const financialData = ref<FinancialData>({ expenses: 0, income: 0 })
 const rawEvents = ref<TeamgleEvent[]>([])
-const todoTasks = ref<TodoTask[]>([])
+const todoTasks = ref<TodoTaskWithUI[]>([])
 
 const actionButtons = [
     { label: 'Create<br>Event', icon: 'event', colorClass: 'bg-blue-1 text-primary' },
@@ -295,15 +300,15 @@ const addNewTask = async () => {
     })
     
     // Extend with local state
-    const editableTask = { ...newTask, isEditing: true }
+    const editableTask: TodoTaskWithUI = { ...newTask, isEditing: true }
     todoTasks.value.push(editableTask)
 }
 
-const enableEdit = (task: any) => {
+const enableEdit = (task: TodoTaskWithUI) => {
     task.isEditing = true
 }
 
-const saveTask = async (task: any) => {
+const saveTask = async (task: TodoTaskWithUI) => {
     try {
         if (!task.title.trim()) {
             $q.notify({ type: 'warning', message: 'Title cannot be empty' })
