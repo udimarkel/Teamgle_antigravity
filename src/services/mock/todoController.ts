@@ -4,6 +4,9 @@ export interface TodoTask {
     date: string; // Display date
     location: string;
     isCompleted: boolean;
+    eventId?: string; // Optional linkage to specific event
+    assigneeAvatar?: string;
+    priority?: 'High' | 'Medium' | 'Low';
 }
 
 // Initial mock data
@@ -29,12 +32,51 @@ let mockTasks: TodoTask[] = [
         location: 'Team Meeting',
         isCompleted: false
     }
+        location: 'Team Meeting',
+    isCompleted: false,
+    priority: 'Low'
+    },
+// Mock event-specific tasks
+{
+    id: '101',
+        title: 'Send rider to band',
+            date: '2024-07-20',
+                location: 'Email',
+                    isCompleted: true,
+                        eventId: '1',
+                            priority: 'High',
+                                assigneeAvatar: 'https://cdn.quasar.dev/img/avatar2.jpg'
+},
+{
+    id: '102',
+        title: 'Book hotel rooms',
+            date: '2024-07-21',
+                location: 'Grand Hyatt',
+                    isCompleted: false,
+                        eventId: '1',
+                            priority: 'Medium',
+                                assigneeAvatar: 'https://cdn.quasar.dev/img/avatar3.jpg'
+},
+{
+    id: '103',
+        title: 'Confirm catering menu',
+            date: '2024-07-22',
+                location: 'Phone',
+                    isCompleted: false,
+                        eventId: '1',
+                            priority: 'High',
+                                assigneeAvatar: 'https://cdn.quasar.dev/img/avatar4.jpg'
+}
 ];
 
-export const getTasks = (): Promise<TodoTask[]> => {
+export const getTasks = (eventId?: string): Promise<TodoTask[]> => {
     return new Promise((resolve) => {
         setTimeout(() => {
-            resolve([...mockTasks])
+            if (eventId) {
+                resolve(mockTasks.filter(t => t.eventId === eventId))
+            } else {
+                resolve([...mockTasks])
+            }
         }, 400)
     })
 }
