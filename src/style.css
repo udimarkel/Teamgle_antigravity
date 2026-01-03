@@ -1,0 +1,18 @@
+:root {
+  /* Quasar Brand colors */
+  --q-primary: #2563EB;
+  --q-secondary: #10B981;
+  --q-accent: #9C27B0;
+  --q-dark: #1D1D1D;
+
+  --q-positive: #21BA45;
+  --q-negative: #C10015;
+  --q-info: #31CCEC;
+  --q-warning: #F2C037;
+  
+  /* Background color override if needed, though Quasar handles body bg usually */
+}
+
+body {
+  background-color: #F8FAFC;
+}
