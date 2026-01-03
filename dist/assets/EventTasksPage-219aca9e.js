@@ -1,1 +1,0 @@
-import{_ as t}from"./_plugin-vue_export-helper-c27b6911.js";import{F as a,N as r,L as e}from"./index-ecf58dfa.js";const o={},n={class:"q-pa-md"};function c(i,s){return a(),r("div",n,[...s[0]||(s[0]=[e("div",{class:"text-h6"},"Event Tasks",-1),e("div",null,"Task list and progress tracking will go here.",-1)])])}const _=t(o,[["render",c]]);export{_ as default};

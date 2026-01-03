@@ -1,1 +1,0 @@
-import{_ as s}from"./_plugin-vue_export-helper-c27b6911.js";import{F as n,N as o,L as t}from"./index-ecf58dfa.js";const r={},a={class:"q-pa-md"};function i(c,e){return n(),o("div",a,[...e[0]||(e[0]=[t("div",{class:"text-h6"},"Event Settings",-1),t("div",null,"Configuration and parameters for this event will go here.",-1)])])}const f=s(r,[["render",i]]);export{f as default};

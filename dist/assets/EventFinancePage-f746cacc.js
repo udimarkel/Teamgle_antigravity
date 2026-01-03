@@ -1,0 +1,1 @@
+import{_ as t}from"./_plugin-vue_export-helper-c27b6911.js";import{F as s,N as a,L as n}from"./index-2e11f86b.js";const o={},r={class:"q-pa-md"};function c(i,e){return s(),a("div",r,[...e[0]||(e[0]=[n("div",{class:"text-h6"},"Event Finance",-1),n("div",null,"Budgeting and expense tracking will go here.",-1)])])}const _=t(o,[["render",c]]);export{_ as default};

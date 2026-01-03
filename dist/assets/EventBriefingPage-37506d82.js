@@ -1,0 +1,1 @@
+import{_ as t}from"./_plugin-vue_export-helper-c27b6911.js";import{F as n,N as o,L as s}from"./index-2e11f86b.js";const r={},i={class:"q-pa-md"};function a(c,e){return n(),o("div",i,[...e[0]||(e[0]=[s("div",{class:"text-h6"},"Event Briefing & Files",-1),s("div",null,"Documents, maps, and briefing notes will go here.",-1)])])}const f=t(r,[["render",a]]);export{f as default};

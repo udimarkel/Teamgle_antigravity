@@ -30,43 +30,40 @@ let mockTasks: TodoTask[] = [
         title: 'Flag issues or shortages',
         date: '15/03/2024',
         location: 'Team Meeting',
-        isCompleted: false
-    }
-        location: 'Team Meeting',
-    isCompleted: false,
-    priority: 'Low'
+        isCompleted: false,
+        priority: 'Low'
     },
-// Mock event-specific tasks
-{
-    id: '101',
+    // Mock event-specific tasks
+    {
+        id: '101',
         title: 'Send rider to band',
-            date: '2024-07-20',
-                location: 'Email',
-                    isCompleted: true,
-                        eventId: '1',
-                            priority: 'High',
-                                assigneeAvatar: 'https://cdn.quasar.dev/img/avatar2.jpg'
-},
-{
-    id: '102',
+        date: '2024-07-20',
+        location: 'Email',
+        isCompleted: true,
+        eventId: '1',
+        priority: 'High',
+        assigneeAvatar: 'https://cdn.quasar.dev/img/avatar2.jpg'
+    },
+    {
+        id: '102',
         title: 'Book hotel rooms',
-            date: '2024-07-21',
-                location: 'Grand Hyatt',
-                    isCompleted: false,
-                        eventId: '1',
-                            priority: 'Medium',
-                                assigneeAvatar: 'https://cdn.quasar.dev/img/avatar3.jpg'
-},
-{
-    id: '103',
+        date: '2024-07-21',
+        location: 'Grand Hyatt',
+        isCompleted: false,
+        eventId: '1',
+        priority: 'Medium',
+        assigneeAvatar: 'https://cdn.quasar.dev/img/avatar3.jpg'
+    },
+    {
+        id: '103',
         title: 'Confirm catering menu',
-            date: '2024-07-22',
-                location: 'Phone',
-                    isCompleted: false,
-                        eventId: '1',
-                            priority: 'High',
-                                assigneeAvatar: 'https://cdn.quasar.dev/img/avatar4.jpg'
-}
+        date: '2024-07-22',
+        location: 'Phone',
+        isCompleted: false,
+        eventId: '1',
+        priority: 'High',
+        assigneeAvatar: 'https://cdn.quasar.dev/img/avatar4.jpg'
+    }
 ];
 
 export const getTasks = (eventId?: string): Promise<TodoTask[]> => {
