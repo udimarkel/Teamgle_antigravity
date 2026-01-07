@@ -33,7 +33,7 @@ const routes: RouteRecordRaw[] = [
                 children: [
                     { path: '', redirect: { name: 'event-dashboard' } },
                     { path: 'dashboard', name: 'event-dashboard', component: () => import('../pages/event/EventDashboardPage.vue') },
-                    { path: 'team', name: 'event-team', component: () => import('../pages/event/EventTeamPage.vue') },
+                    { path: 'employee', name: 'event-team', component: () => import('../pages/event/EventTeamPage.vue') },
                     { path: 'schedule', name: 'event-schedule', component: () => import('../pages/event/EventSchedulePage.vue') },
                     { path: 'tasks', name: 'event-tasks', component: () => import('../pages/event/EventTasksPage.vue') },
                     { path: 'briefing', name: 'event-briefing', component: () => import('../pages/event/EventBriefingPage.vue') },

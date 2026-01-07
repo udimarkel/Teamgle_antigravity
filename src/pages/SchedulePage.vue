@@ -1,7 +1,7 @@
 <template>
   <q-page class="schedule-page column">
     <!-- Header Section -->
-    <div class="schedule-header row items-center justify-between q-pa-md bg-white">
+    <div class="schedule-header row items-center justify-between q-pa-md bg-white wrap q-gutter-y-sm">
       <div class="row items-center q-gutter-x-sm">
         <h1 class="text-h5 text-weight-bold no-margin">{{ currentMonthYear }}</h1>
         <div class="row items-center cursor-pointer">
@@ -79,7 +79,7 @@
                   class="event-card absolute cursor-pointer"
                   :class="event.type"
                   :style="getEventStyle(event)"
-                  @dblclick="navigateToEvent(event.id)"
+                  @click="navigateToEvent(event.id)"
                 >
                     <div class="event-title">{{ event.title }}</div>
                     <div class="event-time">{{ event.timeRange }}</div>
@@ -126,7 +126,7 @@
                             :key="event.id"
                             class="month-event-chip q-px-xs rounded-borders text-caption ellipsis cursor-pointer"
                             :class="event.type"
-                            @dblclick="navigateToEvent(event.id)"
+                            @click="navigateToEvent(event.id)"
                         >
                             {{ event.title }}
                         </div>
@@ -141,6 +141,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 import { getEvents, TeamgleEvent } from '../services/mock/eventController'
 
@@ -169,7 +170,8 @@ interface ScheduleEvent {
     _fullDate?: Date
 }
 
-const currentView = ref<'day' | 'week' | 'month'>('week')
+const $q = useQuasar()
+const currentView = ref<'day' | 'week' | 'month'>($q.screen.lt.md ? 'day' : 'week')
 
 const currentDate = ref(new Date()) 
 const events = ref<ScheduleEvent[]>([])

@@ -5,6 +5,7 @@ export interface TodoTask {
     location: string;
     isCompleted: boolean;
     eventId?: string; // Optional linkage to specific event
+    eventName?: string; // Display name of event
     assigneeAvatar?: string;
     priority?: 'High' | 'Medium' | 'Low';
 }
@@ -16,14 +17,18 @@ let mockTasks: TodoTask[] = [
         title: 'Check hour discrepancies',
         date: '21/01/2024',
         location: 'Live Concert O2',
-        isCompleted: false
+        isCompleted: false,
+        eventId: '1',
+        eventName: 'Summer Music Festival - Downtown Arena'
     },
     {
         id: '2',
         title: 'Send arrival reminders',
         date: '05/02/2024',
         location: 'Basketball Game',
-        isCompleted: false
+        isCompleted: false,
+        eventId: '2',
+        eventName: 'Tech Innovators Conference'
     },
     {
         id: '3',
@@ -31,7 +36,9 @@ let mockTasks: TodoTask[] = [
         date: '15/03/2024',
         location: 'Team Meeting',
         isCompleted: false,
-        priority: 'Low'
+        priority: 'Low',
+        eventId: '3',
+        eventName: 'Annual Charity Gala'
     },
     // Mock event-specific tasks
     {
@@ -41,6 +48,7 @@ let mockTasks: TodoTask[] = [
         location: 'Email',
         isCompleted: true,
         eventId: '1',
+        eventName: 'Summer Music Festival - Downtown Arena',
         priority: 'High',
         assigneeAvatar: 'https://cdn.quasar.dev/img/avatar2.jpg'
     },
@@ -51,6 +59,7 @@ let mockTasks: TodoTask[] = [
         location: 'Grand Hyatt',
         isCompleted: false,
         eventId: '1',
+        eventName: 'Summer Music Festival - Downtown Arena',
         priority: 'Medium',
         assigneeAvatar: 'https://cdn.quasar.dev/img/avatar3.jpg'
     },
@@ -61,6 +70,7 @@ let mockTasks: TodoTask[] = [
         location: 'Phone',
         isCompleted: false,
         eventId: '1',
+        eventName: 'Summer Music Festival - Downtown Arena',
         priority: 'High',
         assigneeAvatar: 'https://cdn.quasar.dev/img/avatar4.jpg'
     }

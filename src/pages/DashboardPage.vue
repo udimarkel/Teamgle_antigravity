@@ -47,12 +47,12 @@
           <div class="col-12">
             <q-card class="dashboard-card">
               <q-card-section class="todo-header row items-center justify-between">
-                <div class="text-h6">To Do</div>
+                <div class="text-h6">To Do List</div>
                 <q-btn round color="white" text-color="primary" icon="add" size="sm" @click="addNewTask" />
               </q-card-section>
 
               <q-list separator>
-                <q-item v-for="task in todoTasks" :key="task.id" clickable v-ripple tag="label">
+                <q-item v-for="task in todoTasks" :key="task.id" clickable v-ripple tag="label" @dblclick="navigateToEventTasks(task)">
                   <q-item-section side top>
                     <q-checkbox v-model="task.isCompleted" />
                   </q-item-section>
@@ -60,6 +60,9 @@
                   <!-- VIEW MODE -->
                   <q-item-section v-if="!task.isEditing">
                     <q-item-label :class="{'text-strike text-grey-5': task.isCompleted}">{{ task.title }}</q-item-label>
+                    <q-item-label caption v-if="task.eventName" class="text-primary text-weight-bold q-mb-xs" style="font-size: 0.75rem;">
+                         {{ task.eventName }}
+                    </q-item-label>
                     <q-item-label caption>
                       <q-icon name="location_on" size="xs" /> {{ task.location }} &bull; {{ task.date }}
                     </q-item-label>
@@ -199,6 +202,12 @@ const navigateToEvent = (id: string) => {
     router.push(`/events/${id}/dashboard`)
 }
 
+const navigateToEventTasks = (task: TodoTaskWithUI) => {
+    if (task.eventId) {
+        router.push(`/events/${task.eventId}/tasks`)
+    }
+}
+
 // --- State ---
 const financialData = ref<FinancialData>({ expenses: 0, income: 0 })
 const rawEvents = ref<TeamgleEvent[]>([])
@@ -332,7 +341,14 @@ const saveTask = async (task: TodoTaskWithUI) => {
 .dashboard-page {
   background: linear-gradient(135deg, #eff6ff 0%, #f3e5f5 100%);
   min-height: 100vh;
-  padding: 24px;
+  /* Responsive padding handled via utility classes or query if needed, but let's just reduce default */
+  padding: 16px; 
+}
+
+@media (min-width: 600px) {
+    .dashboard-page {
+        padding: 24px;
+    }
 }
 
 .dashboard-card {

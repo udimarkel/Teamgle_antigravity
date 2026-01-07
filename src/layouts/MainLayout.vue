@@ -39,6 +39,7 @@
       v-model="leftDrawerOpen"
       show-if-above
       bordered
+      :width="200"
       class="app-drawer"
     >
       <q-list class="drawer-list">
@@ -95,10 +96,24 @@
 
     <!-- Mobile Footer -->
     <q-footer bordered class="mobile-footer" v-if="$q.screen.lt.md">
-      <q-tabs no-caps active-color="primary" indicator-color="transparent" class="text-grey-7" v-model="tab">
-        <q-route-tab name="home" label="Home" icon="sym_r_dashboard" to="/" />
-        <q-route-tab name="schedule" label="Schedule" icon="sym_r_calendar_today" to="/schedule" />
-        <q-route-tab name="events" label="Events" icon="sym_r_event" to="/events" />
+      <q-tabs 
+          no-caps 
+          active-color="primary" 
+          indicator-color="transparent" 
+          class="text-grey-7" 
+          v-model="tab"
+          outside-arrows
+          mobile-arrows
+      >
+        <q-route-tab 
+            v-for="link in planningLinks"
+            :key="link.label"
+            :name="link.label.toLowerCase()" 
+            :label="link.label" 
+            :icon="link.icon" 
+            :to="link.to"
+            exact
+        />
       </q-tabs>
     </q-footer>
 

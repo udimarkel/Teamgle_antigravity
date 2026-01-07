@@ -1,8 +1,8 @@
 <template>
   <div class="column full-height">
     <!-- Secondary Top Nav -->
-    <div class="event-nav-bar row items-center justify-between q-px-md bg-white border-bottom">
-      <div class="row items-center q-gutter-x-md">
+    <div class="event-nav-bar row no-wrap items-center justify-between q-px-md bg-white border-bottom">
+      <div class="row items-center q-gutter-x-sm">
         <q-btn flat round icon="arrow_back" color="grey-8" @click="$router.push('/events')" />
         
         <q-tabs 
@@ -15,7 +15,7 @@
             align="left"
         >
             <q-route-tab :to="`/events/${eventId}/dashboard`" name="dashboard" label="Dashboard" />
-            <q-route-tab :to="`/events/${eventId}/team`" name="team" label="Employee" />
+            <q-route-tab :to="`/events/${eventId}/employee`" name="team" label="Employee" />
             <q-route-tab :to="`/events/${eventId}/schedule`" name="schedule" label="Schedule/Gantt" />
             <q-route-tab :to="`/events/${eventId}/tasks`" name="tasks" label="Tasks" />
             <q-route-tab :to="`/events/${eventId}/briefing`" name="briefing" label="Briefing & Files" />
@@ -25,9 +25,7 @@
       </div>
 
       <div class="row items-center q-gutter-x-sm">
-         <q-btn outline color="grey-7" label="Send Update" no-caps />
          <q-btn outline color="grey-7" label="Edit" no-caps />
-         <q-btn unelevated color="primary" label="Go Live" no-caps icon-right="videocam" />
       </div>
     </div>
 

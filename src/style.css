@@ -17,4 +17,6 @@
 body {
   background-color: var(--bg-slate);
   color: #333;
+  overflow-x: hidden;
+  font-size: 12px;
 }

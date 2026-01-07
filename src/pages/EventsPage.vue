@@ -19,22 +19,18 @@
       <q-btn outline color="grey-7" label="Status" icon="sym_r_filter_list" no-caps class="filter-btn" />
       <q-btn outline color="grey-7" label="Category" icon="sym_r_label" no-caps class="filter-btn" />
       <q-space />
-      <div class="view-toggles">
-           <q-btn flat dense round icon="sym_r_view_kanban" color="grey-8" />
-           <q-btn flat dense round icon="sym_r_list" color="primary" class="active-view-btn" />
-           <q-btn flat dense round icon="sym_r_calendar_view_month" color="grey-8" />
-      </div>
+
     </div>
 
     <!-- Stats Row -->
     <!-- I'll use a v-for here too to simplify -->
-    <div class="row q-col-gutter-md q-mb-xl">
+    <div class="row q-col-gutter-md q-mb-md">
       <div class="col-12 col-md-4" v-for="statKey in statKeys" :key="statKey">
           <q-card flat class="stat-card full-height" :class="stats[statKey]?.color ? 'bg-' + stats[statKey]?.color : 'bg-white border-grey'">
-            <q-card-section>
+            <q-card-section class="q-pa-sm">
                <div class="row justify-between items-start">
                  <div>
-                    <div class="text-h6 text-weight-bold q-mb-sm">{{ stats[statKey]?.label }}</div>
+                    <div class="text-subtitle1 text-weight-bold q-mb-xs">{{ stats[statKey]?.label }}</div>
                     <div class="row items-center q-mb-xs" :class="statKey === 'readiness' ? 'text-blue-9' : 'text-grey-8'">
                        <q-icon :name="stats[statKey]?.icon" size="xs" class="q-mr-xs"/> {{ stats[statKey]?.value }}
                     </div>
@@ -62,7 +58,7 @@
             :key="event.id" 
             flat 
             class="event-card cursor-pointer"
-            @dblclick="navigateToEvent(event.id)"
+            @click="navigateToEvent(event.id)"
           >
               <q-card-section>
                   <!-- Top: Badges + Menu -->
@@ -199,8 +195,14 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .events-page {
-    padding: 24px;
+    padding: 16px;
     background-color: #fafafa;
+}
+
+@media (min-width: 600px) {
+    .events-page {
+        padding: 24px;
+    }
 }
 
 .page-header {
@@ -222,6 +224,7 @@ onMounted(async () => {
 
 .search-input {
     width: 300px;
+    max-width: 100%;
 }
 
 .create-btn {
@@ -233,24 +236,16 @@ onMounted(async () => {
     gap: 8px;
     align-items: center;
     margin-bottom: 24px;
+    flex-wrap: wrap; 
 }
 
 .filter-btn {
     background: white;
 }
 
-.view-toggles {
-    display: flex;
-    gap: 4px;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 4px;
-}
 
-.active-view-btn {
-    background-color: #e3f2fd; // bg-blue-1
-}
+
+
 
 .stat-card {
     border-radius: 12px;

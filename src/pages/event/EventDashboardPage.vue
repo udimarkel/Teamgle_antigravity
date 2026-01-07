@@ -1,38 +1,38 @@
 <template>
-  <q-page class="event-dashboard-page q-pa-lg">
-    <div class="column q-gutter-y-md">
+  <q-page class="event-dashboard-page q-pa-md q-pa-md-lg">
+    <div class="column q-gutter-y-xs">
       
       <!-- Row 1: Event Summary Card -->
       <q-card flat class="summary-card" v-if="event">
         <q-card-section>
           <div class="row justify-between items-start">
             <div>
-              <div class="text-h5 text-weight-bold q-mb-md flex items-center">
+              <div class="text-h5 text-weight-bold q-mb-md flex items-center wrap">
                 {{ event.title }}
                 <q-badge :class="event.statusColor" class="q-ml-sm text-subtitle2 q-px-sm q-py-xs">{{ event.status }}</q-badge>
               </div>
               
-              <div class="row  q-col-gutter-x-xl q-col-gutter-y-sm text-grey-8">
-                <div class="col-auto flex items-center">
+              <div class="row q-col-gutter-x-md q-col-gutter-y-sm text-grey-8">
+                <div class="col-12 col-sm-auto flex items-center">
                   <q-icon name="calendar_today" size="xs" class="q-mr-sm" /> {{ event.date }}
                 </div>
-                <div class="col-auto flex items-center">
+                <div class="col-12 col-sm-auto flex items-center">
                    <q-icon name="schedule" size="xs" class="q-mr-sm" /> {{ event.timeRange }}
                 </div>
                 <!-- Break to new line on small screens if needed, or keeping formatting -->
-                <div class="col-auto flex items-center">
+                <div class="col-12 col-sm-auto flex items-center">
                    <q-icon name="location_on" size="xs" class="q-mr-sm" /> {{ event.location }}
                 </div>
               </div>
               
-              <div class="row q-col-gutter-x-xl q-col-gutter-y-sm text-grey-8 q-mt-sm">
-                 <div class="col-auto flex items-center">
+              <div class="row q-col-gutter-x-md q-col-gutter-y-sm text-grey-8 q-mt-sm">
+                 <div class="col-12 col-sm-auto flex items-center">
                    <q-icon name="person" size="xs" class="q-mr-sm" /> Customer: {{ event.customer.name }}
                 </div>
-                <div class="col-auto flex items-center">
+                <div class="col-12 col-sm-auto flex items-center">
                    <q-icon name="assignment_ind" size="xs" class="q-mr-sm" /> Contact: John Doe
                 </div>
-                <div class="col-auto flex items-center">
+                <div class="col-12 col-sm-auto flex items-center">
                    <q-icon name="phone" size="xs" class="q-mr-sm" /> Number: +972521234567
                 </div>
               </div>
@@ -53,7 +53,7 @@
       <!-- Row 2: KPI Cards -->
       <div class="row q-col-gutter-md">
          <!-- Event Readiness -->
-         <div class="col-12 col-md-3">
+         <div class="col-12 col-sm-6 col-md-3">
              <q-card flat class="kpi-card bg-orange-1 text-dark">
                 <q-card-section>
                     <div class="row justify-between items-start">
@@ -67,7 +67,7 @@
          </div>
 
          <!-- Briefing Completion -->
-         <div class="col-12 col-md-3">
+         <div class="col-12 col-sm-6 col-md-3">
              <q-card flat class="kpi-card bg-orange-1 text-dark">
                 <q-card-section>
                     <div class="row justify-between items-start">
@@ -81,7 +81,7 @@
          </div>
 
          <!-- Event Revenue -->
-         <div class="col-12 col-md-2">
+         <div class="col-12 col-sm-6 col-md-2">
              <q-card flat class="kpi-card bg-blue-1 text-dark">
                 <q-card-section>
                     <div class="row justify-between items-start">
@@ -95,7 +95,7 @@
          </div>
 
          <!-- Labor Cost -->
-         <div class="col-12 col-md-2">
+         <div class="col-12 col-sm-6 col-md-2">
              <q-card flat class="kpi-card bg-red-1 text-dark">
                 <q-card-section>
                     <div class="row justify-between items-start">
@@ -109,7 +109,7 @@
          </div>
          
          <!-- Net Profit -->
-         <div class="col-12 col-md-2">
+         <div class="col-12 col-sm-6 col-md-2">
              <q-card flat class="kpi-card bg-green-1 text-dark">
                 <q-card-section>
                     <div class="row justify-between items-start">
@@ -186,7 +186,7 @@
 
           <!-- Column 2: Staffing Stats -->
           <div class="col-12 col-md-3">
-             <div class="column q-gutter-y-md full-height">
+             <div class="column q-gutter-y-xs full-height">
                  
                  <!-- Approved Workers -->
                  <q-card flat class="staffing-card bg-orange-1 col">
