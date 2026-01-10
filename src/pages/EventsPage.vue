@@ -136,9 +136,9 @@ interface KanbanColumn {
 }
 
 const kanbanColumns: KanbanColumn[] = [
-    { id: 'today', title: "Today's Events", headerClass: 'bg-royalblue text-white', barColor: 'primary' },
+    { id: 'today', title: "Today's Events", headerClass: 'bg-royalblue text-black', barColor: 'primary' },
     { id: 'upcoming', title: "Upcoming Events", headerClass: 'bg-warning text-dark', barColor: 'primary' },
-    { id: 'completed', title: "Completed Events", headerClass: 'bg-negative text-white', barColor: 'primary' },
+    { id: 'completed', title: "Completed Events", headerClass: 'bg-logo-green text-black', barColor: 'primary' },
     { id: 'draft', title: "Draft Events", headerClass: 'bg-grey-3 text-dark', barColor: 'grey' }
 ]
 
@@ -304,6 +304,11 @@ onMounted(async () => {
 .overlap-avatar {
     margin-right: -8px;
     border: 2px solid white;
+}
+
+
+.bg-logo-green {
+    background-color: #6FB730; /* Assumed 0 padding for invalid hex provided */
 }
 
 .more-avatar {

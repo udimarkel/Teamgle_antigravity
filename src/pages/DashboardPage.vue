@@ -215,9 +215,9 @@ const todoTasks = ref<TodoTaskWithUI[]>([])
 
 const actionButtons = [
     { label: 'Create<br>Event', icon: 'event', colorClass: 'bg-blue-1 text-primary' },
-    { label: 'Create<br>Customer', icon: 'person_add', colorClass: 'bg-orange-1 text-orange-9' },
-    { label: 'Send<br>Update', icon: 'chat_bubble_outline', colorClass: 'bg-amber-1 text-amber-9' },
-    { label: 'Add<br>Worker', icon: 'group_add', colorClass: 'bg-purple-1 text-purple-9' },
+    { label: 'Create<br>Customer', icon: 'person_add', colorClass: 'bg-green-1 text-green-9' },
+    { label: 'Send<br>Update', icon: 'chat_bubble_outline', colorClass: 'bg-green-1 text-green-9' },
+    { label: 'Add<br>Worker', icon: 'group_add', colorClass: 'bg-orange-1 text-orange-9' },
 ]
 
 // --- Helpers ---

@@ -9,7 +9,7 @@
          </div>
          <div class="row q-gutter-x-sm" v-if="showActions">
               <q-btn outline color="grey-7" label="Boost Requests" no-caps />
-              <q-btn unelevated color="primary" label="Publish Staffing Request" no-caps />
+              <q-btn outline color="grey-7" label="Publish Staffing Request" no-caps />
          </div>
        </div>
 

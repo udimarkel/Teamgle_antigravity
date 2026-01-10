@@ -13,13 +13,21 @@
           class="menu-btn"
         />
         <q-toolbar-title class="app-title">
-           <q-icon name="sym_r_layers" size="32px" class="logo-icon" />
-           Teamgle
+           <img src="/teamgle-logo.png" alt="Teamgle" style="height: 40px;" />
         </q-toolbar-title>
 
         <q-space />
 
         <div class="header-actions">
+           <q-btn flat round dense class="action-btn text-weight-bold" :label="currentLang">
+              <q-menu>
+                <q-list style="min-width: 100px">
+                  <q-item clickable v-close-popup @click="switchLanguage">
+                    <q-item-section>{{ currentLang === 'EN' ? 'Hebrew' : 'English' }}</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+           </q-btn>
            <q-btn flat round dense icon="sym_r_search" class="action-btn" />
            <q-btn flat round dense icon="sym_r_notifications" class="action-btn">
               <q-badge color="red" rounded floating>3</q-badge>
@@ -127,6 +135,12 @@ import { useQuasar } from 'quasar'
 const $q = useQuasar()
 const leftDrawerOpen = ref<boolean>(false)
 const tab = ref<string>('home')
+
+const currentLang = ref<string>('EN')
+
+const switchLanguage = () => {
+  currentLang.value = currentLang.value === 'EN' ? 'HE' : 'EN'
+}
 
 interface NavLink {
   label: string;
