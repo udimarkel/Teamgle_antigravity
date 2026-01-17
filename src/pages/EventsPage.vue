@@ -2,22 +2,22 @@
   <q-page class="events-page">
     <!-- Header -->
     <div class="page-header">
-      <div class="page-title">Events</div>
+      <div class="page-title">{{ langStore.t('Events') }}</div>
       <div class="header-controls">
-        <q-input outlined dense v-model="search" placeholder="Search events..." bg-color="white" class="search-input">
+        <q-input outlined dense v-model="search" :placeholder="langStore.t('Search events...')" bg-color="white" class="search-input">
           <template v-slot:prepend>
             <q-icon name="sym_r_search" />
           </template>
         </q-input>
-        <q-btn unelevated color="primary" icon="add" label="Create Event" no-caps class="create-btn" />
+        <q-btn unelevated color="primary" icon="add" :label="langStore.t('Create Event')" no-caps class="create-btn" />
       </div>
     </div>
 
     <!-- Filters Row -->
     <div class="filters-row">
-      <q-btn outline color="grey-7" label="Date" icon="sym_r_calendar_today" no-caps class="filter-btn" />
-      <q-btn outline color="grey-7" label="Status" icon="sym_r_filter_list" no-caps class="filter-btn" />
-      <q-btn outline color="grey-7" label="Category" icon="sym_r_label" no-caps class="filter-btn" />
+      <q-btn outline color="grey-7" :label="langStore.t('Date')" icon="sym_r_calendar_today" no-caps class="filter-btn" />
+      <q-btn outline color="grey-7" :label="langStore.t('Status')" icon="sym_r_filter_list" no-caps class="filter-btn" />
+      <q-btn outline color="grey-7" :label="langStore.t('Category')" icon="sym_r_label" no-caps class="filter-btn" />
       <q-space />
 
     </div>
@@ -30,13 +30,13 @@
             <q-card-section class="q-pa-sm">
                <div class="row justify-between items-start">
                  <div>
-                    <div class="text-subtitle1 text-weight-bold q-mb-xs">{{ stats[statKey]?.label }}</div>
-                    <div class="row items-center q-mb-xs" :class="statKey === 'readiness' ? 'text-blue-9' : 'text-grey-8'">
-                       <q-icon :name="stats[statKey]?.icon" size="xs" class="q-mr-xs"/> {{ stats[statKey]?.value }}
-                    </div>
-                    <div class="row items-center q-mb-xs text-red-9">
-                       <q-icon name="warning" size="xs" class="q-mr-xs"/> {{ stats[statKey]?.subtext }}
-                    </div>
+                    <div class="text-subtitle1 text-weight-bold q-mb-xs">{{ langStore.t(stats[statKey]?.label || '') }}</div>
+                     <div class="row items-center q-mb-xs" :class="statKey === 'readiness' ? 'text-blue-9' : 'text-grey-8'">
+                        <q-icon :name="stats[statKey]?.icon" size="xs" :class="langStore.currentLang === 'HE' ? 'q-ml-xs' : 'q-mr-xs'"/> {{ translateStat(stats[statKey]?.value) }}
+                     </div>
+                     <div class="row items-center q-mb-xs text-red-9">
+                        <q-icon name="warning" size="xs" :class="langStore.currentLang === 'HE' ? 'q-ml-xs' : 'q-mr-xs'"/> {{ translateStat(stats[statKey]?.subtext) }}
+                     </div>
                  </div>
                  <q-icon v-if="stats[statKey]?.icon" :name="stats[statKey]?.icon" size="sm" :color="statKey === 'readiness' ? 'blue-3' : 'grey-8'" />
                </div>
@@ -64,7 +64,7 @@
                   <!-- Top: Badges + Menu -->
                   <div class="row justify-between items-center q-mb-sm">
                       <div class="row q-gutter-xs">
-                          <q-badge color="grey-2" text-color="grey-9" class="q-pa-xs">{{ event.workersCount }} Workers</q-badge>
+                          <q-badge color="grey-2" text-color="grey-9" class="q-pa-xs">{{ event.workersCount }} {{ langStore.t('Workers') }}</q-badge>
                           <q-badge :class="event.statusColor" class="q-pa-xs">{{ event.status }}</q-badge>
                       </div>
                       <q-btn flat round dense icon="more_horiz" size="sm" color="grey-7" @click.stop />
@@ -81,7 +81,7 @@
 
                   <!-- Customer -->
                   <div class="row items-center q-mb-md">
-                      <span class="text-caption text-grey-8 q-mr-xs">Customer:</span>
+                      <span class="text-caption text-grey-8 q-mr-xs">{{ langStore.t('Customer') }}:</span>
                       <q-avatar size="16px" class="q-mx-xs">
                           <img :src="event.customer.avatarUrl">
                       </q-avatar>
@@ -113,8 +113,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { getEvents, getEventStats, TeamgleEvent, EventStats } from '../services/mock/eventController'
+import { useLanguageStore } from '../stores/language'
 
 const router = useRouter()
+const langStore = useLanguageStore()
 
 const navigateToEvent = (id: string) => {
     router.push(`/events/${id}/dashboard`)
@@ -135,12 +137,12 @@ interface KanbanColumn {
     barColor: string;
 }
 
-const kanbanColumns: KanbanColumn[] = [
-    { id: 'today', title: "Today's Events", headerClass: 'bg-royalblue text-black', barColor: 'primary' },
-    { id: 'upcoming', title: "Upcoming Events", headerClass: 'bg-warning text-dark', barColor: 'primary' },
-    { id: 'completed', title: "Completed Events", headerClass: 'bg-logo-green text-black', barColor: 'primary' },
-    { id: 'draft', title: "Draft Events", headerClass: 'bg-grey-3 text-dark', barColor: 'grey' }
-]
+const kanbanColumns = computed<KanbanColumn[]>(() => [
+    { id: 'today', title: langStore.t("Today's Events"), headerClass: 'bg-royalblue text-black', barColor: 'primary' },
+    { id: 'upcoming', title: langStore.t("Upcoming Events"), headerClass: 'bg-warning text-dark', barColor: 'primary' },
+    { id: 'completed', title: langStore.t("Completed Events"), headerClass: 'bg-logo-green text-black', barColor: 'primary' },
+    { id: 'draft', title: langStore.t("Draft Events"), headerClass: 'bg-grey-3 text-dark', barColor: 'grey' }
+])
 
 // --- Helpers ---
 const filteredEvents = computed(() => {
@@ -178,6 +180,20 @@ const getCategoryByDate = (e: TeamgleEvent): string => {
 
 const getEventsByCategory = (category: string): TeamgleEvent[] => {
     return filteredEvents.value.filter(e => getCategoryByDate(e) === category)
+}
+
+const translateStat = (text: string | undefined): string => {
+    if (!text) return ''
+    // Regex to capture Number + Text (e.g. "3 events fully ready")
+    const match = text.match(/^(\d+)\s+(.*)$/)
+    if (match) {
+        const count = match[1]
+        const phrase = match[2]
+        // Translate the phrase part
+        return `${count} ${langStore.t(phrase)}`
+    }
+    // Fallback if no number found (or just text)
+    return langStore.t(text)
 }
 
 // --- Lifecycle ---
@@ -254,12 +270,27 @@ onMounted(async () => {
     }
 }
 
+[dir="rtl"] .stat-card {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .stat-card .row {
+    direction: rtl; 
+}
+
 .kanban-header {
     padding: 16px;
     border-radius: 8px;
     margin-bottom: 16px;
     display: flex;
     align-items: center;
+}
+
+[dir="rtl"] .kanban-header {
+    direction: rtl;
+    text-align: right;
+    justify-content: flex-start;
 }
 
 .bg-royalblue { background-color: #4361ee; }

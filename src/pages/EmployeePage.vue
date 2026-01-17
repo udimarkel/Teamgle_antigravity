@@ -6,8 +6,8 @@
         <!-- Breadcrumb / Title if needed. For now empty to match clean look or add Button -->
         <div></div> <!-- Spacer -->
         <div class="row items-center q-gutter-x-sm">
-            <q-btn unelevated color="primary" icon="add" label="New Worker" no-caps class="q-px-md" />
-            <q-input dense outlined bg-color="white" v-model="search" placeholder="Search" class="search-input">
+            <q-btn unelevated color="primary" icon="add" :label="langStore.t('New Worker')" no-caps class="q-px-md" />
+            <q-input dense outlined bg-color="white" v-model="search" :placeholder="langStore.t('Search')" class="search-input">
                 <template v-slot:prepend>
                     <q-icon name="search" color="grey-5" />
                 </template>
@@ -19,7 +19,7 @@
     <!-- Confirmation Section -->
     <q-card flat class="bg-indigo-1 q-mb-lg rounded-borders-lg">
         <div class="q-pa-md row items-center justify-between">
-            <div class="text-h6 text-grey-8 text-weight-regular">New worker to confirm</div>
+            <div class="text-h6 text-grey-8 text-weight-regular">{{ langStore.t('New worker to confirm') }}</div>
             <q-btn flat round dense icon="close" color="grey-6" />
         </div>
         
@@ -40,7 +40,8 @@
                     text-color="dark"
                     class="role-chip"
                 >
-                    {{ worker.pendingRole }}
+                >
+                    {{ langStore.t(worker.pendingRole || '') }}
                 </q-chip>
                 
                 <q-btn flat round dense icon="more_vert" color="grey-5" />
@@ -53,9 +54,9 @@
         <!-- Tabs & View Toggles -->
         <div class="row items-center justify-between q-mb-md">
             <div class="row items-center q-gutter-x-md">
-                <q-btn unelevated rounded color="primary" no-caps label="All workers" class="q-px-lg" />
-                <q-btn flat rounded color="grey-7" no-caps label="Active" class="q-px-lg" />
-                <q-btn flat rounded color="grey-7" no-caps label="Inactive" class="q-px-lg" />
+                <q-btn unelevated rounded color="primary" no-caps :label="langStore.t('All workers')" class="q-px-lg" />
+                <q-btn flat rounded color="grey-7" no-caps :label="langStore.t('Active')" class="q-px-lg" />
+                <q-btn flat rounded color="grey-7" no-caps :label="langStore.t('Inactive')" class="q-px-lg" />
             </div>
             
             <div class="row items-center q-gutter-x-sm">
@@ -98,7 +99,7 @@
                         </q-avatar>
                         <div class="column">
                             <span class="text-weight-bold">{{ props.row.name }}</span>
-                            <span class="text-caption text-grey-6">{{ props.row.role }}</span>
+                            <span class="text-caption text-grey-6">{{ langStore.t(props.row.role) }}</span>
                         </div>
                     </div>
                 </q-td>
@@ -112,7 +113,7 @@
                             v-for="skill in props.row.skills" 
                             :key="skill"
                             dense
-                            :label="skill"
+                            :label="langStore.t(skill)"
                             :color="getSkillColor(skill)"
                             text-color="grey-9"
                             class="skill-chip q-px-sm"
@@ -154,7 +155,7 @@
                                 </q-avatar>
                                 <div>
                                     <div class="text-subtitle2 text-weight-bold">{{ worker.name }}</div>
-                                    <div class="text-caption text-grey-6">{{ worker.role }}</div>
+                                    <div class="text-caption text-grey-6">{{ langStore.t(worker.role) }}</div>
                                 </div>
                             </div>
                             <q-btn flat round dense icon="more_vert" color="grey-5" />
@@ -174,7 +175,7 @@
                                 v-for="skill in worker.skills" 
                                 :key="skill"
                                 dense
-                                :label="skill"
+                                :label="langStore.t(skill)"
                                 :color="getSkillColor(skill)"
                                 text-color="grey-9"
                                 class="skill-chip q-px-sm"
@@ -202,6 +203,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getEmployees, getPendingEmployees, Employee } from '../services/mock/employeeController'
+import { useLanguageStore } from '../stores/language'
+
+const langStore = useLanguageStore()
 
 const search = ref('')
 const viewMode = ref<'list' | 'grid'>('list')
@@ -218,14 +222,14 @@ const filteredEmployees = computed(() => {
     )
 })
 
-const columns = [
-    { name: 'name', label: 'Name', align: 'left', field: 'name', sortable: true },
-    { name: 'phone', label: 'Phone', align: 'left', field: 'phone' },
-    { name: 'email', label: 'Email', align: 'left', field: 'email' },
-    { name: 'skills', label: 'Skills Tags', align: 'left', field: 'skills' },
-    { name: 'rating', label: 'Rating', align: 'left', field: 'rating', sortable: true },
+const columns = computed(() => [
+    { name: 'name', label: langStore.t('Name'), align: 'left', field: 'name', sortable: true },
+    { name: 'phone', label: langStore.t('Phone'), align: 'left', field: 'phone' },
+    { name: 'email', label: langStore.t('Email'), align: 'left', field: 'email' },
+    { name: 'skills', label: langStore.t('Skills Tags'), align: 'left', field: 'skills' },
+    { name: 'rating', label: langStore.t('Rating'), align: 'left', field: 'rating', sortable: true },
     { name: 'actions', label: '', align: 'right' }
-]
+])
 
 onMounted(async () => {
     employees.value = await getEmployees()

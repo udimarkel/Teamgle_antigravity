@@ -8,7 +8,7 @@
            <q-btn flat round dense icon="chevron_left" color="grey-8" @click="handlePrev" />
            <q-btn flat round dense icon="chevron_right" color="grey-8" @click="handleNext" />
         </div>
-        <q-btn unelevated color="blue-1" text-color="primary" label="Today" class="q-ml-sm text-weight-bold" @click="goToToday" />
+        <q-btn unelevated color="blue-1" text-color="primary" :label="langStore.t('Today')" class="q-ml-sm text-weight-bold" @click="goToToday" />
       </div>
 
       <div class="row items-center q-gutter-x-sm">
@@ -17,7 +17,7 @@
             :unelevated="currentView === 'day'" 
             :color="currentView === 'day' ? 'primary' : 'grey-7'" 
             :class="{ 'text-white': currentView === 'day' }"
-            dense no-caps label="Day" 
+            dense no-caps :label="langStore.t('Day')" 
             @click="setView('day')" 
         />
         <q-btn 
@@ -25,7 +25,7 @@
             :unelevated="currentView === 'week'"
             :color="currentView === 'week' ? 'primary' : 'grey-7'"
             :class="{ 'text-white': currentView === 'week' }"
-            dense no-caps label="Week" 
+            dense no-caps :label="langStore.t('Week')" 
             @click="setView('week')"
         />
         <q-btn 
@@ -33,7 +33,7 @@
             :unelevated="currentView === 'month'"
             :color="currentView === 'month' ? 'primary' : 'grey-7'"
             :class="{ 'text-white': currentView === 'month' }"
-            dense no-caps label="Month" 
+            dense no-caps :label="langStore.t('Month')" 
             @click="setView('month')"
         />
       </div>
@@ -105,7 +105,7 @@
     <div v-else class="month-container col bg-white scroll">
         <div class="month-header row">
             <div v-for="d in ['MON','TUE','WED','THU','FRI','SAT','SUN']" :key="d" class="col text-center q-py-sm text-grey-7 text-weight-bold border-bottom border-right">
-                {{ d }}
+                {{ langStore.t(d) }}
             </div>
         </div>
         <div class="month-body">
@@ -143,9 +143,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 
+import { useLanguageStore } from '../stores/language'
 import { getEvents, TeamgleEvent } from '../services/mock/eventController'
 
 const router = useRouter()
+const langStore = useLanguageStore()
 
 const navigateToEvent = (id: string) => {
     router.push(`/events/${id}/dashboard`)
@@ -269,7 +271,7 @@ const weekDays = computed(() => {
             dateObj: d,
             dateStr: d.toISOString().split('T')[0],
             dayNumber: d.getDate(),
-            dayName: d.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()
+            dayName: d.toLocaleDateString(langStore.currentLang === 'HE' ? 'he-IL' : 'en-US', { weekday: 'long' }).toUpperCase()
         })
         return days
     }
@@ -283,7 +285,7 @@ const weekDays = computed(() => {
             dateObj: d,
             dateStr: d.toISOString().split('T')[0],
             dayNumber: d.getDate(),
-            dayName: d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()
+            dayName: d.toLocaleDateString(langStore.currentLang === 'HE' ? 'he-IL' : 'en-US', { weekday: 'short' }).toUpperCase()
         })
     }
     return days
@@ -316,7 +318,7 @@ const monthDays = computed(() => {
 })
 
 const currentMonthYear = computed(() => {
-    return currentDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    return currentDate.value.toLocaleDateString(langStore.currentLang === 'HE' ? 'he-IL' : 'en-US', { month: 'long', year: 'numeric' })
 })
 
 const formatHour = (h: number) => {

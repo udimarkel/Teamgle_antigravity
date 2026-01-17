@@ -8,8 +8,8 @@
             <div class="text-h5 text-weight-bold text-black">{{ title }}</div>
          </div>
          <div class="row q-gutter-x-sm" v-if="showActions">
-              <q-btn outline color="grey-7" label="Boost Requests" no-caps />
-              <q-btn outline color="grey-7" label="Publish Staffing Request" no-caps />
+              <q-btn outline color="grey-7" :label="langStore.t('Boost Requests')" no-caps />
+              <q-btn outline color="grey-7" :label="langStore.t('Publish Staffing Request')" no-caps />
          </div>
        </div>
 
@@ -216,7 +216,10 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from 'vue'
+import { PropType, computed } from 'vue'
+import { useLanguageStore } from '../../stores/language'
+
+const langStore = useLanguageStore()
 
 const props = defineProps({
     title: { type: String, default: '' },
@@ -226,17 +229,17 @@ const props = defineProps({
 
 const emits = defineEmits(['approve', 'reject', 'hold', 'restore'])
 
-const columns = [
-    { name: 'worker_info', label: 'WORKER INFO', align: 'left', field: 'name', sortable: true },
-    { name: 'role', label: 'APPLIED ROLE', align: 'left', field: 'role', sortable: true },
-    { name: 'shiftTime', label: 'APPLIED SHIFT', align: 'left', field: 'shiftTime' },
-    { name: 'rating', label: 'RATING', align: 'left', field: 'id' }, // Hack for empty field mapping
-    { name: 'workFrequency', label: 'WORK FREQUENCY', align: 'left', field: 'workFrequency' },
-    { name: 'cost', label: 'Cost (H)', align: 'center', field: 'hourlyRate' },
-    { name: 'warnings', label: 'WARNINGS', align: 'center', field: 'id' },
-    { name: 'actions', label: 'ACTIONS', align: 'right' },
-    { name: 'time_elapsed', label: 'TIME', align: 'center', field: 'appliedAt' }
-]
+const columns = computed(() => [
+    { name: 'worker_info', label: langStore.t('WORKER INFO'), align: 'left', field: 'name', sortable: true },
+    { name: 'role', label: langStore.t('APPLIED ROLE'), align: 'left', field: 'role', sortable: true },
+    { name: 'shiftTime', label: langStore.t('APPLIED SHIFT'), align: 'left', field: 'shiftTime' },
+    { name: 'rating', label: langStore.t('RATING'), align: 'left', field: 'id' }, // Hack for empty field mapping
+    { name: 'workFrequency', label: langStore.t('WORK FREQUENCY'), align: 'left', field: 'workFrequency' },
+    { name: 'cost', label: langStore.t('Cost (H)'), align: 'center', field: 'hourlyRate' },
+    { name: 'warnings', label: langStore.t('WARNINGS'), align: 'center', field: 'id' },
+    { name: 'actions', label: langStore.t('ACTIONS'), align: 'right' },
+    { name: 'time_elapsed', label: langStore.t('TIME'), align: 'center', field: 'appliedAt' }
+])
 
 const getFrequencyColor = (frequency: string) => {
     switch (frequency) {

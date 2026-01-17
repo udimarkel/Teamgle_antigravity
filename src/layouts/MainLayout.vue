@@ -19,11 +19,11 @@
         <q-space />
 
         <div class="header-actions">
-           <q-btn flat round dense class="action-btn text-weight-bold" :label="currentLang">
+           <q-btn flat round dense class="action-btn text-weight-bold lang-btn" :label="langStore.currentLang">
               <q-menu>
                 <q-list style="min-width: 100px">
-                  <q-item clickable v-close-popup @click="switchLanguage">
-                    <q-item-section>{{ currentLang === 'EN' ? 'Hebrew' : 'English' }}</q-item-section>
+                  <q-item clickable v-close-popup @click="langStore.setLanguage(langStore.currentLang === 'EN' ? 'HE' : 'EN')">
+                    <q-item-section>{{ langStore.currentLang === 'EN' ? 'Hebrew' : 'English' }}</q-item-section>
                   </q-item>
                 </q-list>
               </q-menu>
@@ -53,7 +53,7 @@
       <q-list class="drawer-list">
         <!-- Section: Planning -->
         <q-item-label header class="section-header">
-          PLANNING & SCHEDULING
+          {{ langStore.t('PLANNING & SCHEDULING') }}
         </q-item-label>
 
         <q-item
@@ -70,13 +70,13 @@
             <q-icon :name="link.icon" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>{{ link.label }}</q-item-label>
+            <q-item-label class="drawer-label">{{ langStore.t(link.label) }}</q-item-label>
           </q-item-section>
         </q-item>
 
         <!-- Section: Live -->
         <q-item-label header class="section-header live-section">
-          LIVE EVENT
+           {{ langStore.t('LIVE EVENT') }}
         </q-item-label>
 
         <q-item
@@ -90,7 +90,7 @@
             <q-icon name="sym_r_play_circle" />
           </q-item-section>
           <q-item-section>
-            <q-item-label>Live Mode</q-item-label>
+            <q-item-label class="drawer-label">{{ langStore.t('Live Mode') }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -117,7 +117,7 @@
             v-for="link in planningLinks"
             :key="link.label"
             :name="link.label.toLowerCase()" 
-            :label="link.label" 
+            :label="langStore.t(link.label)" 
             :icon="link.icon" 
             :to="link.to"
             exact
@@ -131,16 +131,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
+import { useLanguageStore } from '../stores/language'
 
 const $q = useQuasar()
 const leftDrawerOpen = ref<boolean>(false)
 const tab = ref<string>('home')
 
-const currentLang = ref<string>('EN')
-
-const switchLanguage = () => {
-  currentLang.value = currentLang.value === 'EN' ? 'HE' : 'EN'
-}
+const langStore = useLanguageStore()
 
 interface NavLink {
   label: string;
@@ -195,6 +192,10 @@ function toggleLeftDrawer() {
        color: #616161;
     }
   }
+
+  .lang-btn {
+      font-family: "Roboto", "-apple-system", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  }
 }
 
 .app-drawer {
@@ -214,6 +215,14 @@ function toggleLeftDrawer() {
   &.live-section {
     margin-top: 24px;
   }
+}
+
+[dir="rtl"] .section-header {
+    text-align: right;
+}
+
+[dir="rtl"] .drawer-label {
+    text-align: right;
 }
 
 .nav-item {

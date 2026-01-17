@@ -20,3 +20,8 @@ body {
   overflow-x: hidden;
   font-size: 12px;
 }
+
+[dir="rtl"] body,
+[dir="rtl"] .q-layout {
+  font-family: 'Heebo', sans-serif;
+}

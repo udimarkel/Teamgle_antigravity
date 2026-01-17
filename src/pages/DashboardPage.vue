@@ -9,18 +9,18 @@
           <div class="col-12 col-sm-6">
             <q-card class="dashboard-card full-height">
               <q-card-section>
-                <div class="card-title">Financial Performance (YTD)</div>
+                <div class="card-title">{{ langStore.t('Financial Performance (YTD)') }}</div>
               </q-card-section>
               <q-card-section class="row justify-between items-center">
                 <div class="text-center">
                    <q-avatar color="amber-1" text-color="amber-9" icon="credit_card" font-size="28px" size="50px" class="q-mb-sm"/>
                    <div class="stat-value text-amber-9">${{ formatK(financialData.expenses) }}K</div>
-                   <div class="stat-label">Expenses</div>
+                   <div class="stat-label">{{ langStore.t('Expenses') }}</div>
                 </div>
                 <div class="text-center">
                    <q-avatar color="green-1" text-color="green-6" icon="attach_money" font-size="28px" size="50px" class="q-mb-sm"/>
                    <div class="stat-value text-green-6">${{ formatK(financialData.income) }}K</div>
-                   <div class="stat-label">Income</div>
+                   <div class="stat-label">{{ langStore.t('Income') }}</div>
                 </div>
               </q-card-section>
             </q-card>
@@ -47,7 +47,7 @@
           <div class="col-12">
             <q-card class="dashboard-card">
               <q-card-section class="todo-header row items-center justify-between">
-                <div class="text-h6">To Do List</div>
+                <div class="text-h6">{{ langStore.t('To Do List') }}</div>
                 <q-btn round color="white" text-color="primary" icon="add" size="sm" @click="addNewTask" />
               </q-card-section>
 
@@ -118,7 +118,7 @@
                 </q-item>
                 
                 <q-item v-if="todoTasks.length === 0">
-                    <q-item-section class="text-center text-grey">All caught up!</q-item-section>
+                    <q-item-section class="text-center text-grey">{{ langStore.t('All caught up!') }}</q-item-section>
                 </q-item>
               </q-list>
             </q-card>
@@ -132,8 +132,8 @@
         <!-- Widget 4: Upcoming Activities -->
         <q-card class="dashboard-card">
           <q-card-section class="row justify-between items-center">
-            <div class="card-title">Upcoming Activities</div>
-            <router-link to="/events" class="view-more-link">View more</router-link>
+            <div class="card-title">{{ langStore.t('Upcoming Activities') }}</div>
+            <router-link to="/events" class="view-more-link">{{ langStore.t('View more') }}</router-link>
           </q-card-section>
           
           <q-list padding class="scrollable-list">
@@ -189,9 +189,11 @@ import { getTasks, deleteTask, TodoTask, addTask, updateTask } from '../services
 import { useQuasar } from 'quasar'
 
 import { useRouter } from 'vue-router'
+import { useLanguageStore } from '../stores/language'
 
 const $q = useQuasar()
 const router = useRouter()
+const langStore = useLanguageStore()
 
 // Extend the TodoTask type for local UI state
 interface TodoTaskWithUI extends TodoTask {
@@ -213,12 +215,12 @@ const financialData = ref<FinancialData>({ expenses: 0, income: 0 })
 const rawEvents = ref<TeamgleEvent[]>([])
 const todoTasks = ref<TodoTaskWithUI[]>([])
 
-const actionButtons = [
-    { label: 'Create<br>Event', icon: 'event', colorClass: 'bg-blue-1 text-primary' },
-    { label: 'Create<br>Customer', icon: 'person_add', colorClass: 'bg-green-1 text-green-9' },
-    { label: 'Send<br>Update', icon: 'chat_bubble_outline', colorClass: 'bg-green-1 text-green-9' },
-    { label: 'Add<br>Worker', icon: 'group_add', colorClass: 'bg-orange-1 text-orange-9' },
-]
+const actionButtons = computed(() => [
+    { label: langStore.t('Create<br>Event'), icon: 'event', colorClass: 'bg-blue-1 text-primary' },
+    { label: langStore.t('Create<br>Customer'), icon: 'person_add', colorClass: 'bg-green-1 text-green-9' },
+    { label: langStore.t('Send<br>Update'), icon: 'chat_bubble_outline', colorClass: 'bg-green-1 text-green-9' },
+    { label: langStore.t('Add<br>Worker'), icon: 'group_add', colorClass: 'bg-orange-1 text-orange-9' },
+])
 
 // --- Helpers ---
 const formatK = (val: number): string => (val / 1000).toFixed(0)
@@ -243,7 +245,7 @@ const getTimeBadge = (dateStr: string): { label: string, color: string } => {
     } else if (diffDays > 1 && diffDays <= 7) {
         return { label: 'This Week', color: 'bg-blue-1 text-blue-8' }
     } else {
-        return { label: 'Upcoming', color: 'bg-grey-3 text-grey-8' }
+        return { label: langStore.t('Upcoming'), color: 'bg-grey-3 text-grey-8' }
     }
 }
 
@@ -382,11 +384,16 @@ const saveTask = async (task: TodoTaskWithUI) => {
 }
 
 .todo-header {
-  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  background: #4facfe;
   color: white;
   padding: 12px 16px;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
+}
+
+[dir="rtl"] .todo-header {
+    text-align: right;
+    direction: rtl;
 }
 
 .action-shortcut-btn {
@@ -399,6 +406,7 @@ const saveTask = async (task: TodoTaskWithUI) => {
         font-weight: bold;
         line-height: 1.1;
         text-align: center;
+        margin-left: 10px;
     }
 }
 

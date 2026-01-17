@@ -1,0 +1,147 @@
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+
+export const useLanguageStore = defineStore('language', () => {
+    const currentLang = ref<'EN' | 'HE'>('EN');
+
+    const setLanguage = (lang: 'EN' | 'HE') => {
+        currentLang.value = lang;
+        // Basic RTL support for the document body
+        if (lang === 'HE') {
+            document.body.setAttribute('dir', 'rtl');
+        } else {
+            document.body.setAttribute('dir', 'ltr');
+        }
+    };
+
+    const isRtl = computed(() => currentLang.value === 'HE');
+
+    // Simple dictionary for EN/HE translations
+    const dictionary: Record<string, { EN: string; HE: string }> = {
+        // MainLayout & Sidebar
+        'Home': { EN: 'Home', HE: 'בית' },
+        'Events': { EN: 'Events', HE: 'אירועים' },
+        'Calendar': { EN: 'Calendar', HE: 'לוח שנה' },
+        'Employee': { EN: 'Employee', HE: 'עובדים' },
+        'Finance': { EN: 'Finance', HE: 'כספים' },
+        'PLANNING & SCHEDULING': { EN: 'PLANNING & SCHEDULING', HE: 'תכנון ושיבוץ' },
+        'LIVE EVENT': { EN: 'LIVE EVENT', HE: 'אירוע חי' },
+        'Live Mode': { EN: 'Live Mode', HE: 'מצב חי' },
+        'Hebrew': { EN: 'Hebrew', HE: 'עברית' },
+        'English': { EN: 'English', HE: 'אנגלית' },
+
+        // Dashboard
+        'Financial Performance (YTD)': { EN: 'Financial Performance (YTD)', HE: 'ביצועים פיננסיים (שנתי)' },
+        'Expenses': { EN: 'Expenses', HE: 'הוצאות' },
+        'Income': { EN: 'Income', HE: 'הכנסות' },
+        'To Do List': { EN: 'To Do List', HE: 'רשימת משימות' },
+        'All caught up!': { EN: 'All caught up!', HE: 'הכל מוכן!' },
+        'Upcoming Activities': { EN: 'Upcoming Activities', HE: 'פעילויות קרובות' },
+        'View more': { EN: 'View more', HE: 'ראה עוד' },
+
+        // Dashboard Buttons
+        'Create<br>Event': { EN: 'Create<br>Event', HE: 'צור<br>אירוע' },
+        'Create<br>Customer': { EN: 'Create<br>Customer', HE: 'צור<br>לקוח' },
+        'Send<br>Update': { EN: 'Send<br>Update', HE: 'שלח<br>עדכון' },
+        'Add<br>Worker': { EN: 'Add<br>Worker', HE: 'הוסף<br>עובד' },
+
+        // Events Page
+        'Search events...': { EN: 'Search events...', HE: 'חפש אירועים...' },
+        'Create Event': { EN: 'Create Event', HE: 'צור אירוע' },
+        'Date': { EN: 'Date', HE: 'תאריך' },
+        'Status': { EN: 'Status', HE: 'סטטוס' },
+        'Category': { EN: 'Category', HE: 'קטגוריה' },
+        'Readiness': { EN: 'Readiness', HE: 'מוכנות' },
+        'Staffing': { EN: 'Staffing', HE: 'איוש' },
+        'Load': { EN: 'Load', HE: 'עומס' },
+        "Today's Events": { EN: "Today's Events", HE: "אירועי היום" },
+        "Upcoming Events": { EN: "Upcoming Events", HE: "אירועים קרובים" },
+        "Completed Events": { EN: "Completed Events", HE: "אירועים שהושלמו" },
+        "Draft Events": { EN: "Draft Events", HE: "טיוטות" },
+
+        // Staff Table
+        'Publish Staffing Request': { EN: 'Publish Staffing Request', HE: 'פרסם דרישת איוש' },
+        'Boost Requests': { EN: 'Boost Requests', HE: 'קדם בקשות' },
+        'WORKER INFO': { EN: 'WORKER INFO', HE: 'פרטי עובד' },
+        'APPLIED ROLE': { EN: 'APPLIED ROLE', HE: 'תפקיד' },
+        'APPLIED SHIFT': { EN: 'APPLIED SHIFT', HE: 'משמרת' },
+        'RATING': { EN: 'RATING', HE: 'דירוג' },
+        'WORK FREQUENCY': { EN: 'WORK FREQUENCY', HE: 'תדירות' },
+        'Cost (H)': { EN: 'Cost (H)', HE: 'עלות (ש)' },
+        'WARNINGS': { EN: 'WARNINGS', HE: 'התראות' },
+        'ACTIONS': { EN: 'ACTIONS', HE: 'פעולות' },
+        'TIME': { EN: 'TIME', HE: 'זמן' },
+
+        // General
+        'Close': { EN: 'Close', HE: 'סגור' },
+        'Save': { EN: 'Save', HE: 'שמור' },
+        'Delete': { EN: 'Delete', HE: 'מחק' },
+        'Edit': { EN: 'Edit', HE: 'ערוך' },
+        'Search': { EN: 'Search', HE: 'חיפוש' },
+        'Filter': { EN: 'Filter', HE: 'סינון' },
+
+        // Calendar
+        'Day': { EN: 'Day', HE: 'יום' },
+        'Week': { EN: 'Week', HE: 'שבוע' },
+        'Month': { EN: 'Month', HE: 'חודש' },
+        'Today': { EN: 'Today', HE: 'היום' },
+
+        // Short Days
+        'MON': { EN: 'MON', HE: 'ב׳' },
+        'TUE': { EN: 'TUE', HE: 'g׳' },
+        'WED': { EN: 'WED', HE: 'ד׳' },
+        'THU': { EN: 'THU', HE: 'ה׳' },
+        'FRI': { EN: 'FRI', HE: 'ו׳' },
+        'SAT': { EN: 'SAT', HE: 'ש׳' },
+        'SUN': { EN: 'SUN', HE: 'א׳' },
+
+        // Event Stats
+        'Event Readiness': { EN: 'Event Readiness', HE: 'מוכנות לאירוע' },
+        'Staffing Status': { EN: 'Staffing Status', HE: 'סטטוס צוות' },
+        'Weekly Event Load': { EN: 'Weekly Event Load', HE: 'עומס אירועים שבועי' },
+        'events fully ready': { EN: 'events fully ready', HE: 'אירועים מוכנים לגמרי' },
+        'event with issues': { EN: 'event with issues', HE: 'אירוע עם בעיות' },
+        'workers assigned today': { EN: 'workers assigned today', HE: 'עובדים שובצו היום' },
+        'workers missing documents': { EN: 'workers missing documents', HE: 'עובדים חסרי מסמכים' },
+        'events this week': { EN: 'events this week', HE: 'אירועים השבוע' },
+        'high-demand days': { EN: 'high-demand days', HE: 'ימים בעומס גבוה' },
+
+        // Employee Page
+        'New Worker': { EN: 'New Worker', HE: 'עובד חדש' },
+        'New worker to confirm': { EN: 'New worker to confirm', HE: 'עובד חדש לאישור' },
+        'All workers': { EN: 'All workers', HE: 'כל העובדים' },
+        'Active': { EN: 'Active', HE: 'פעיל' },
+        'Inactive': { EN: 'Inactive', HE: 'לא פעיל' },
+        'Name': { EN: 'Name', HE: 'שם' },
+        'Phone': { EN: 'Phone', HE: 'טלפון' },
+        'Email': { EN: 'Email', HE: 'דוא״ל' },
+        'Skills Tags': { EN: 'Skills Tags', HE: 'תגיות כישורים' },
+        'Rating': { EN: 'Rating', HE: 'דירוג' },
+        'Terms': { EN: 'Terms', HE: 'תנאים' },
+
+        // Roles & Skills (Dynamic)
+        'Waiter': { EN: 'Waiter', HE: 'מלצר' },
+        'General': { EN: 'General', HE: 'כללי' },
+        'Driver': { EN: 'Driver', HE: 'נהג' },
+        'Bartender': { EN: 'Bartender', HE: 'ברמן' },
+        'Security Guard': { EN: 'Security Guard', HE: 'מאבטח' },
+        'Close as Won': { EN: 'Close as Won', HE: 'סגירה כזכייה' },
+
+        // Events Page Additional
+        'Workers': { EN: 'Workers', HE: 'עובדים' },
+        'Customer': { EN: 'Customer', HE: 'לקוח' },
+    };
+
+    const t = (key: string): string => {
+        const entry = dictionary[key];
+        if (!entry) return key; // Fallback to key if not found
+        return entry[currentLang.value];
+    };
+
+    return {
+        currentLang,
+        setLanguage,
+        isRtl,
+        t
+    };
+});
