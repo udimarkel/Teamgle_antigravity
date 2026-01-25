@@ -343,3 +343,158 @@ export const getEventTimeline = (eventId: string): Promise<EventTimelineItem[]> 
         }, 300)
     })
 }
+// --- Live Dashboard Data Types ---
+export interface LiveEventData {
+    activeIssues: Array<{
+        id: number;
+        title: string;
+        reporterName: string;
+        reporterAvatar: string;
+        timeAgo: string;
+        severity: 'high' | 'medium' | 'low';
+    }>;
+    staffLate: Array<{
+        id: number;
+        name: string;
+        role: string;
+        avatar: string;
+        lateBy: string;
+    }>;
+    staffActive: Array<{
+        id: number;
+        name: string;
+        role: string;
+        avatar: string;
+        location: string;
+        shiftEnd: string;
+    }>;
+    staffDone: Array<{
+        id: number;
+        name: string;
+        role: string;
+        avatar: string;
+        checkOut: string;
+    }>;
+}
+
+export const getLiveDashboardData = (eventId: string): Promise<LiveEventData> => {
+    return new Promise((resolve) => {
+        // Mock data varying slightly by ID hash or simple custom logic
+        setTimeout(() => {
+            // Default Data
+            const data: LiveEventData = {
+                activeIssues: [
+                    { id: 1, title: 'No Water at Bar 2', reporterName: 'Sarah J.', reporterAvatar: avatars[1], timeAgo: '15m ago', severity: 'high' },
+                    { id: 2, title: 'Generator noise complaint', reporterName: 'Mike T.', reporterAvatar: avatars[3], timeAgo: '5m ago', severity: 'medium' },
+                    { id: 4, title: 'Request: Extra walkie-talkie batteries', reporterName: 'John D.', reporterAvatar: avatars[0], timeAgo: '2m ago', severity: 'low' }
+                ],
+                staffLate: [
+                    { id: 101, name: 'David Cohen', role: 'Security', avatar: avatars[0], lateBy: '15m' },
+                    { id: 102, name: 'Lisa Ray', role: 'Server', avatar: avatars[4], lateBy: '8m' }
+                ],
+                staffActive: [
+                    { id: 201, name: 'John Doe', role: 'Head Security', avatar: avatars[2], location: 'Main Gate', shiftEnd: '23:00' },
+                    { id: 202, name: 'Emma W.', role: 'Bar Manager', avatar: avatars[5], location: 'VIP Lounge', shiftEnd: '00:00' },
+                    { id: 203, name: 'Chris P.', role: 'Sound Tech', avatar: avatars[5], location: 'Stage Left', shiftEnd: '22:00' }
+                ],
+                staffDone: [
+                    { id: 301, name: 'George B.', role: 'Setup Crew', avatar: avatars[0], checkOut: '17:45' }
+                ]
+            }
+
+            // Customization for "Morning Briefing" (1b)
+            if (eventId === '1b') {
+                data.activeIssues = [] // Specific event has no issues
+                data.staffLate = []
+                data.staffActive = [
+                    { id: 205, name: 'Alice M.', role: 'Speaker', avatar: avatars[1], location: 'Podium', shiftEnd: '09:00' }
+                ]
+            }
+
+            // Customization for "VIP Entrance Security" (1d) - Has critical issues
+            if (eventId === '1d') {
+                data.activeIssues.push({ id: 3, title: 'Ticket Scanner Failure', reporterName: 'Ken', reporterAvatar: avatars[2], timeAgo: '1m ago', severity: 'high' })
+            }
+
+            resolve(data)
+        }, 300)
+    })
+}
+
+// --- Post-Event Summary Data ---
+export interface EventSummaryData {
+    finance: {
+        revenue: number;
+        revenueTarget: number;
+        laborCost: number;
+        laborCostEstimated: number; // For "Planned vs Actual"
+        netProfit: number;
+        margin: number;
+    };
+    kpis: {
+        attendanceAccuracy: number; // %
+        standbyUtilization: number; // %
+        checkInEfficiency: string; // e.g. "45s"
+    };
+    rolesData: {
+        labels: string[];
+        data: number[];
+        colors: string[];
+    };
+    incidents: Array<{
+        type: string;
+        reporter: string;
+        timeToResolve: string;
+        outcome: string;
+        isLongResolve: boolean; // > 30 mins
+    }>;
+    qualitative: {
+        sentimentScore: number; // 1-5
+        managerDebrief: string;
+        aiRecommendations: Array<{
+            title: string;
+            desc: string;
+            icon: string;
+        }>;
+    };
+}
+
+export const getEventSummary = (eventId: string): Promise<EventSummaryData> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({
+                finance: {
+                    revenue: 45000,
+                    revenueTarget: 42000,
+                    laborCost: 12500,
+                    laborCostEstimated: 11000, // Actual > Estimated -> Orange
+                    netProfit: 32500,
+                    margin: 72
+                },
+                kpis: {
+                    attendanceAccuracy: 94,
+                    standbyUtilization: 100, // 2/2 called
+                    checkInEfficiency: '42s'
+                },
+                rolesData: {
+                    labels: ['Security', 'Bar Staff', 'General', 'Tech'],
+                    data: [15, 8, 12, 4],
+                    colors: ['#F97316', '#3B82F6', '#22C55E', '#A855F7'] // Orange, Blue, Green, Purple
+                },
+                incidents: [
+                    { type: 'Safety', reporter: 'David C.', timeToResolve: '15m', outcome: 'Resolved on site', isLongResolve: false },
+                    { type: 'Logistics', reporter: 'Sarah J.', timeToResolve: '45m', outcome: 'Requires supplier refund', isLongResolve: true }, // Highlight
+                    { type: 'Technical', reporter: 'Chris P.', timeToResolve: '10m', outcome: 'Equipment replaced', isLongResolve: false }
+                ],
+                qualitative: {
+                    sentimentScore: 4.2,
+                    managerDebrief: "Overall a successful event. The bar team was under pressure during the headline act (19:00-20:00). Security check-in flow was smooth thanks to the new scanners.",
+                    aiRecommendations: [
+                        { title: 'Increase Bar Staff', desc: 'Add 2 bartenders during peak hours (19:00-21:00) to reduce wait times.', icon: 'local_bar' },
+                        { title: 'Supplier Review', desc: 'Logistics issue caused 45m delay. Considerations for alternate generator supplier.', icon: 'handyman' }
+                    ]
+                }
+            })
+        }, 600)
+    })
+}

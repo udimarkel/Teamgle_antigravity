@@ -9,7 +9,7 @@
             <q-icon name="sym_r_search" />
           </template>
         </q-input>
-        <q-btn unelevated color="primary" icon="add" :label="langStore.t('Create Event')" no-caps class="create-btn" />
+        <q-btn unelevated color="primary" icon="add" :label="langStore.t('Create Event')" no-caps class="create-btn" @click="router.push('/events/create')" />
       </div>
     </div>
 

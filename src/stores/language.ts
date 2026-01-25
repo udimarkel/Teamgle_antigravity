@@ -130,6 +130,23 @@ export const useLanguageStore = defineStore('language', () => {
         // Events Page Additional
         'Workers': { EN: 'Workers', HE: 'עובדים' },
         'Customer': { EN: 'Customer', HE: 'לקוח' },
+
+        // User Menu
+        'Logout': { EN: 'Logout', HE: 'התנתק' },
+        'Signed in as': { EN: 'Signed in as', HE: 'מחובר כ' },
+
+        // Login Page
+        'Login': { EN: 'Login', HE: 'התחברות' },
+        'Company': { EN: 'Company', HE: 'חברה' },
+        'Username': { EN: 'Username', HE: 'שם משתמש' },
+        'Password': { EN: 'Password', HE: 'סיסמא' },
+        'Forgot Password?': { EN: 'Forgot Password?', HE: 'שחכתי סיסמא' },
+        'Please type your company name': { EN: 'Please type your company name', HE: 'אנא הזן שם חברה' },
+        'Please type your username': { EN: 'Please type your username', HE: 'אנא הזן שם משתמש' },
+        'Please type your password': { EN: 'Please type your password', HE: 'אנא הזן סיסמא' },
+        'Login successful': { EN: 'Login successful', HE: 'התחברות בוצעה בהצלחה' },
+        'Invalid credentials': { EN: 'Invalid credentials', HE: 'פרטי התחברות שגויים' },
+        'Forgot password functionality not implemented yet': { EN: 'Forgot password functionality not implemented yet', HE: 'שחזור סיסמא לא הוטמע עדיין' },
     };
 
     const t = (key: string): string => {

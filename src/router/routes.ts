@@ -2,6 +2,10 @@ import { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
     {
+        path: '/login',
+        component: () => import('../pages/LoginPage.vue')
+    },
+    {
         path: '/',
         component: () => import('../layouts/MainLayout.vue'),
         children: [
@@ -26,6 +30,13 @@ const routes: RouteRecordRaw[] = [
                 component: () => import('../pages/EmployeePage.vue')
             },
 
+            // New Create Event Page (MUST be before :id)
+            {
+                path: 'events/create',
+                name: 'create-event',
+                component: () => import('../pages/CreateEventPage.vue')
+            },
+
             // Event Details Layout
             {
                 path: 'events/:id',
@@ -40,11 +51,23 @@ const routes: RouteRecordRaw[] = [
                     { path: 'finance', name: 'event-finance', component: () => import('../pages/event/EventFinancePage.vue') },
                     { path: 'settings', name: 'event-settings', component: () => import('../pages/event/EventSettingsPage.vue') }
                 ]
+            },
+
+            // Live Mode (Inside MainLayout, but distinct from EventLayout)
+            {
+                path: 'events/:id/live',
+                name: 'event-live',
+                component: () => import('../pages/event/LiveEventPage.vue')
+            },
+
+            // Post-Event Summary Report
+            {
+                path: 'events/:id/summary',
+                name: 'event-summary',
+                component: () => import('../pages/event/EventSummaryPage.vue')
             }
         ],
     },
-
-
 
     // 404 Catch-all
     {

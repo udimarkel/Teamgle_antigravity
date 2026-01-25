@@ -32,10 +32,40 @@
            <q-btn flat round dense icon="sym_r_notifications" class="action-btn">
               <q-badge color="red" rounded floating>3</q-badge>
            </q-btn>
-           <q-btn flat round dense>
+           <q-btn flat round dense class="q-ml-sm">
               <q-avatar size="32px">
                 <img src="https://cdn.quasar.dev/img/boy-avatar.png">
               </q-avatar>
+              <q-menu>
+                <div class="row no-wrap q-pa-md">
+                  <div class="column">
+                    <div class="text-h6 q-mb-md">{{ langStore.t('Settings') }}</div>
+                    <q-toggle v-model="mobileData" label="Use Mobile Data" />
+                    <q-toggle v-model="bluetooth" label="Bluetooth" />
+                  </div>
+
+                  <q-separator vertical inset class="q-mx-lg" />
+
+                  <div class="column items-center">
+                    <q-avatar size="72px">
+                      <img src="https://cdn.quasar.dev/img/boy-avatar.png">
+                    </q-avatar>
+
+                    <div class="text-subtitle1 q-mt-md q-mb-xs">Udi</div>
+                    <div class="text-caption text-grey">udi@teamgle.com</div> <!-- Placeholder email -->
+
+                    <q-btn
+                      color="primary"
+                      :label="langStore.t('Logout')"
+                      push
+                      size="sm"
+                      v-close-popup
+                      @click="logout"
+                      class="q-mt-md"
+                    />
+                  </div>
+                </div>
+              </q-menu>
            </q-btn>
         </div>
       </q-toolbar>
@@ -79,20 +109,38 @@
            {{ langStore.t('LIVE EVENT') }}
         </q-item-label>
 
-        <q-item
-          clickable
-          v-ripple
-          to="/live"
-          active-class="active-nav-item"
-          class="nav-item"
+        <q-expansion-item
+          group="live-group"
+          icon="sym_r_play_circle"
+          :label="langStore.t('Live Mode')"
+          header-class="nav-item text-grey-8"
+          expand-icon-class="hidden"
         >
-          <q-item-section avatar>
-            <q-icon name="sym_r_play_circle" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label class="drawer-label">{{ langStore.t('Live Mode') }}</q-item-label>
-          </q-item-section>
-        </q-item>
+            <q-list class="q-pl-md">
+                <q-item
+                  v-for="evt in todaysEvents"
+                  :key="evt.id"
+                  clickable
+                  v-ripple
+                  :to="`/events/${evt.id}/live`"
+                  class="nav-item text-caption"
+                  active-class="active-nav-item"
+                >
+                   <q-item-section avatar style="min-width: 30px;">
+                     <q-icon name="circle" size="10px" :color="getEventStatusColor(evt)" />
+                   </q-item-section>
+                   <q-item-section>
+                     <q-item-label>{{ evt.title }}</q-item-label>
+                   </q-item-section>
+                </q-item>
+
+                <q-item v-if="todaysEvents.length === 0" class="nav-item text-grey-6 text-italic">
+                    <q-item-section>
+                        <q-item-label class="text-caption">{{ langStore.t('No active events') }}</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-expansion-item>
 
       </q-list>
     </q-drawer>
@@ -129,15 +177,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 import { useLanguageStore } from '../stores/language'
+import { getEvents, TeamgleEvent } from '../services/mock/eventController'
 
 const $q = useQuasar()
+const router = useRouter()
 const leftDrawerOpen = ref<boolean>(false)
 const tab = ref<string>('home')
+const mobileData = ref(false)
+const bluetooth = ref(false)
+const rawEvents = ref<TeamgleEvent[]>([])
 
 const langStore = useLanguageStore()
+
+onMounted(async () => {
+    rawEvents.value = await getEvents()
+})
+
+const todaysEvents = computed(() => {
+    return rawEvents.value.filter(e => e.category === 'today' || e.status === 'In Progress')
+})
+
+const getEventStatusColor = (evt: TeamgleEvent) => {
+    return evt.statusColor ? evt.statusColor.replace('bg-', '').replace('text-', '') : 'primary'
+}
 
 interface NavLink {
   label: string;
@@ -155,6 +221,10 @@ const planningLinks: NavLink[] = [
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function logout() {
+  router.push('/login')
 }
 </script>
 

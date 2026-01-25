@@ -5,6 +5,12 @@
       <div class="row items-center q-gutter-x-sm">
         <q-btn flat round icon="arrow_back" color="grey-8" @click="$router.push('/events')" />
         
+        <!-- Event Title -->
+        <!-- Event Title -->
+        <div v-if="eventTitle" class="bg-grey-2 q-px-md q-py-xs rounded-borders text-subtitle2 text-weight-bold text-grey-8 ellipsis q-mr-md text-center" style="width: 200px;" :title="eventTitle">
+            {{ eventTitle }}
+        </div>
+        
         <q-tabs 
             v-model="tab" 
             dense 
@@ -37,14 +43,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { getEventById } from '../services/mock/eventController'
 
 const route = useRoute()
 const tab = ref('dashboard')
+const eventTitle = ref('')
 
 // Extract eventId from route params
-const eventId = computed(() => route.params.id)
+const eventId = computed(() => route.params.id as string)
+
+const fetchEvent = async () => {
+    if (eventId.value) {
+        const event = await getEventById(eventId.value)
+        if (event) {
+            eventTitle.value = event.title
+        }
+    }
+}
+
+onMounted(fetchEvent)
+watch(eventId, fetchEvent)
 
 </script>
 

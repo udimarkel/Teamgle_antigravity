@@ -33,9 +33,31 @@
                    <q-btn unelevated 
                           class="action-shortcut-btn column no-wrap" 
                           :class="action.colorClass"
+                          @click="action.handler"
                           >
                      <q-icon :name="action.icon" size="md" class="q-mb-sm" />
                      <div class="btn-label" v-html="action.label"></div>
+
+                      <!-- Go Live Dropdown -->
+                      <q-menu v-if="action.id === 'go-live'" fit anchor="bottom middle" self="top middle">
+                        <q-list style="min-width: 250px">
+                            <q-item-label header class="text-weight-bold">Events Running Today</q-item-label>
+                            
+                            <q-item v-for="evt in todaysEvents" :key="evt.id" clickable v-close-popup @click="startGoLive(evt.id)">
+                                <q-item-section avatar>
+                                    <q-avatar size="28px" :color="evt.statusColor.split(' ')[0].replace('bg-', '')" text-color="white" icon="event" />
+                                </q-item-section>
+                                <q-item-section>
+                                    <q-item-label>{{ evt.title }}</q-item-label>
+                                    <q-item-label caption>{{ evt.timeRange }}</q-item-label>
+                                </q-item-section>
+                            </q-item>
+
+                            <q-item v-if="todaysEvents.length === 0">
+                                <q-item-section class="text-center text-grey text-italic q-pa-sm">No events found for today</q-item-section>
+                            </q-item>
+                        </q-list>
+                      </q-menu>
                    </q-btn>
                 </div>
              </div>
@@ -216,10 +238,34 @@ const rawEvents = ref<TeamgleEvent[]>([])
 const todoTasks = ref<TodoTaskWithUI[]>([])
 
 const actionButtons = computed(() => [
-    { label: langStore.t('Create<br>Event'), icon: 'event', colorClass: 'bg-blue-1 text-primary' },
-    { label: langStore.t('Create<br>Customer'), icon: 'person_add', colorClass: 'bg-green-1 text-green-9' },
-    { label: langStore.t('Send<br>Update'), icon: 'chat_bubble_outline', colorClass: 'bg-green-1 text-green-9' },
-    { label: langStore.t('Add<br>Worker'), icon: 'group_add', colorClass: 'bg-orange-1 text-orange-9' },
+    { 
+        id: 'create-event',
+        label: langStore.t('Create<br>Event'), 
+        icon: 'event', 
+        colorClass: 'bg-blue-1 text-primary',
+        handler: () => router.push('/events/create')
+    },
+    { 
+        id: 'create-customer',
+        label: langStore.t('Create<br>Customer'), 
+        icon: 'person_add', 
+        colorClass: 'bg-green-1 text-green-9',
+        handler: () => {} 
+    },
+    { 
+        id: 'go-live',
+        label: langStore.t('Send<br>Update'), 
+        icon: 'chat_bubble_outline', 
+        colorClass: 'bg-green-1 text-green-9',
+         handler: () => {} 
+    },
+    { 
+        id: 'add-worker',
+        label: langStore.t('Add<br>Worker'), 
+        icon: 'group_add', 
+        colorClass: 'bg-orange-1 text-orange-9',
+         handler: () => {} 
+    },
 ])
 
 // --- Helpers ---
@@ -266,6 +312,19 @@ const sortedEvents = computed(() => {
         })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 })
+
+const todaysEvents = computed(() => {
+    return rawEvents.value.filter(e => e.category === 'today')
+})
+
+const startGoLive = (eventId: string) => {
+    router.push(`/events/${eventId}/live`)
+    $q.notify({
+        type: 'positive',
+        message: 'Entering Live Mode...',
+        icon: 'podium'
+    })
+}
 
 // --- Lifecycle ---
 onMounted(async () => {
