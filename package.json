@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
+    "firebase": "^12.9.0",
     "pinia": "^2.1.6",
     "quasar": "^2.16.0",
     "vue": "^3.3.4",
