@@ -192,9 +192,6 @@ const errorMessage = ref("");
 const showTokenDebug = ref(true); // Set to false to hide debug info
 const apiResponse = ref<any>(null);
 
-// API Configuration
-const API_BASE_URL = "https://localhost:7219";
-
 async function handleLogin() {
   errorMessage.value = "";
   apiResponse.value = null;
@@ -219,7 +216,7 @@ async function handleLogin() {
   console.log("🚀 בודק טוקן מול השרת...");
   $q.loading.show({ message: "מאמת טוקן בשרת..." });
 
-  const serverResponse = await authStore.testTokenWithAPI(API_BASE_URL);
+  const serverResponse = await authStore.testTokenWithAPI();
 
   $q.loading.hide();
 
@@ -246,12 +243,10 @@ async function handleLogin() {
   } else {
     // Server did not respond or rejected the token
     console.error("❌ השרת לא אימת את הטוקן");
-    errorMessage.value = `לא ניתן להתחבר - השרת לא זמין או דחה את הטוקן.\nוודא שהשרת רץ על ${API_BASE_URL}`;
+    errorMessage.value = `לא ניתן להתחבר - השרת לא זמין או דחה את הטוקן.`;
 
     // Show error alert
-    alert(
-      `❌ שגיאה באימות מול השרת\n\nהשרת לא זמין או דחה את הטוקן.\nוודא שהשרת רץ על ${API_BASE_URL}`,
-    );
+    alert(`❌ שגיאה באימות מול השרת\n\nהשרת לא זמין או דחה את הטוקן.`);
 
     // Optionally logout from Firebase since server rejected
     await authStore.logout();
@@ -299,7 +294,7 @@ async function testToken() {
 
   $q.loading.show({ message: "בודק טוקן בשרת..." });
 
-  const result = await authStore.testTokenWithAPI(API_BASE_URL);
+  const result = await authStore.testTokenWithAPI();
 
   $q.loading.hide();
 
@@ -323,7 +318,7 @@ async function testToken() {
     });
 
     // Show alert with error
-    alert(`❌ שגיאה בחיבור לשרת\n\nוודא שהשרת רץ על ${API_BASE_URL}`);
+    alert(`❌ שגיאה בחיבור לשרת`);
   }
 }
 

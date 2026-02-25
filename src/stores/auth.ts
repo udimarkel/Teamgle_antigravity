@@ -7,6 +7,7 @@ import {
   User,
 } from "firebase/auth";
 import { auth } from "../services/firebase";
+import { testToken as apiTestToken } from "../services/api";
 
 export const useAuthStore = defineStore("auth", () => {
   // State
@@ -105,41 +106,8 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  async function testTokenWithAPI(
-    apiBaseUrl: string = "https://localhost:7219",
-  ) {
-    if (!token.value || !user.value) {
-      console.error("❌ אין טוקן או משתמש");
-      return null;
-    }
-
-    try {
-      console.log("🚀 שולח בקשה לשרת עם הטוקן...");
-      console.log("URL:", `${apiBaseUrl}/api/Auth/test-token`);
-
-      const response = await fetch(`${apiBaseUrl}/api/Auth/test-token`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token.value}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log("📡 סטטוס תשובה:", response.status);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("✅ תשובה מהשרת:", data);
-        return data;
-      } else {
-        const errorText = await response.text();
-        console.error("❌ שגיאה מהשרת:", response.status, errorText);
-        return null;
-      }
-    } catch (err: any) {
-      console.error("❌ שגיאה בחיבור לשרת:", err);
-      return null;
-    }
+  async function testTokenWithAPI() {
+    return apiTestToken();
   }
 
   // Initialize auth state listener
