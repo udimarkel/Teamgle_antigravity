@@ -42,9 +42,11 @@ export const useAuthStore = defineStore("auth", () => {
       token.value = await userCredential.user.getIdToken();
 
       console.log("✅ התחברות מוצלחת ל-Firebase!");
-      console.log("User ID:", user.value.uid);
-      console.log("Email:", user.value.email);
-      console.log("Token:", token.value);
+      console.log("👤 User ID:", user.value.uid);
+      console.log("📧 Email:", user.value.email);
+      console.log("🎫 Token (מלא):");
+      console.log(token.value);
+      console.log("📏 אורך הטוקן:", token.value.length, "תווים");
 
       return { success: true, user: user.value, token: token.value };
     } catch (err: any) {
