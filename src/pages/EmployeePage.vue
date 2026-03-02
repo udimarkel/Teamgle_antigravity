@@ -495,14 +495,6 @@
               :rules="[(val) => val > 0 || 'Must be greater than 0']"
             />
 
-            <!-- Files Link (Optional) -->
-            <q-input
-              v-model="newWorker.filesLink"
-              :label="langStore.t('Files Link')"
-              outlined
-              dense
-            />
-
             <!-- Employee Files Upload -->
             <div class="q-mt-md">
               <div class="text-caption text-grey-7 q-mb-sm">
