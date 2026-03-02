@@ -99,6 +99,8 @@
         row-key="id"
         class="employee-table col"
         :pagination="{ rowsPerPage: 7 }"
+        @row-click="(evt, row) => openEmployeeDetails(row)"
+        style="cursor: pointer"
       >
         <!-- Name Column -->
         <template v-slot:body-cell-name="props">
@@ -139,7 +141,8 @@
           >
             <q-card
               flat
-              class="items-start q-pa-md rounded-borders-md bordered-card"
+              class="items-start q-pa-md rounded-borders-md bordered-card clickable-card"
+              @click="openEmployeeDetails(worker)"
             >
               <div class="row items-start justify-between q-mb-sm">
                 <div class="row items-center q-gutter-x-sm">
@@ -177,6 +180,157 @@
         </div>
       </div>
     </div>
+
+    <!-- Employee Details Dialog -->
+    <q-dialog v-model="showEmployeeDetailsDialog">
+      <q-card style="min-width: 500px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">{{ langStore.t("Employee Details") }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section v-if="selectedEmployee">
+          <div class="row q-col-gutter-md">
+            <!-- Avatar -->
+            <div class="col-12 text-center">
+              <q-avatar size="100px">
+                <img
+                  :src="
+                    selectedEmployee.avatar ||
+                    'https://cdn.quasar.dev/img/avatar.png'
+                  "
+                />
+              </q-avatar>
+            </div>
+
+            <!-- Full Name -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Full Name") }}
+              </div>
+              <div class="text-body1 text-weight-medium">
+                {{ selectedEmployee.name }}
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Email") }}
+              </div>
+              <div class="text-body1">{{ selectedEmployee.email }}</div>
+            </div>
+
+            <!-- Phone -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Phone Number") }}
+              </div>
+              <div class="text-body1">{{ selectedEmployee.phoneNum }}</div>
+            </div>
+
+            <!-- Role -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Role") }}
+              </div>
+              <div class="text-body1">{{ selectedEmployee.role }}</div>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Date of Birth") }}
+              </div>
+              <div class="text-body1">
+                {{ formatDate(selectedEmployee.dob) }}
+              </div>
+            </div>
+
+            <!-- Cost Per Hour -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Cost Per Hour") }}
+              </div>
+              <div class="text-body1">₪{{ selectedEmployee.costPerHour }}</div>
+            </div>
+
+            <!-- UID -->
+            <div class="col-12" v-if="selectedEmployee.uid">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("UID") }}
+              </div>
+              <div class="text-body1">{{ selectedEmployee.uid }}</div>
+            </div>
+
+            <!-- Company -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Company") }}
+              </div>
+              <div class="text-body1">{{ selectedEmployee.companyName }}</div>
+            </div>
+
+            <!-- Manager -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Manager") }}
+              </div>
+              <div class="text-body1">{{ selectedEmployee.managerName }}</div>
+            </div>
+
+            <!-- Files Link -->
+            <div class="col-12" v-if="selectedEmployee.filesLink">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Files Link") }}
+              </div>
+              <div class="text-body1">
+                <a
+                  :href="selectedEmployee.filesLink"
+                  target="_blank"
+                  class="text-primary"
+                >
+                  {{ selectedEmployee.filesLink }}
+                </a>
+              </div>
+            </div>
+
+            <!-- Created At -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Created At") }}
+              </div>
+              <div class="text-body1">
+                {{ formatDate(selectedEmployee.created_at) }}
+              </div>
+            </div>
+
+            <!-- Firebase UID -->
+            <div class="col-12">
+              <div class="text-caption text-grey-6">
+                {{ langStore.t("Firebase UID") }}
+              </div>
+              <div
+                class="text-body1 text-grey-7"
+                style="word-break: break-all; font-size: 0.85rem"
+              >
+                {{ selectedEmployee.firebaseUID }}
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            :label="langStore.t('Close')"
+            color="primary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- Add Worker Dialog -->
     <q-dialog v-model="showAddWorkerDialog" persistent>
@@ -336,6 +490,8 @@ const search = ref("");
 const viewMode = ref<"list" | "grid">("list");
 const employees = ref<any[]>([]);
 const showAddWorkerDialog = ref(false);
+const showEmployeeDetailsDialog = ref(false);
+const selectedEmployee = ref<any>(null);
 const isSubmitting = ref(false);
 
 // הרחבת ה-DTO עם שדה סיסמה (רק לשימוש מקומי)
@@ -541,6 +697,23 @@ const resetForm = () => {
     uid: "",
   };
 };
+
+// פתיחת דיאלוג פרטי עובד
+const openEmployeeDetails = (employee: any) => {
+  selectedEmployee.value = employee;
+  showEmployeeDetailsDialog.value = true;
+};
+
+// פורמט תאריך
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("he-IL", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
 </script>
 
 <style scoped lang="scss">
@@ -583,5 +756,25 @@ const resetForm = () => {
 
 .bordered-card {
   border: 1px solid #e0e0e0;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+.employee-table {
+  :deep(tbody tr) {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
 }
 </style>
