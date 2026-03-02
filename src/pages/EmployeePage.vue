@@ -36,51 +36,6 @@
       </div>
     </div>
 
-    <!-- Confirmation Section -->
-    <q-card flat class="bg-indigo-1 q-mb-lg rounded-borders-lg">
-      <div class="q-pa-md row items-center justify-between">
-        <div class="text-h6 text-grey-8 text-weight-regular">
-          {{ langStore.t("New worker to confirm") }}
-        </div>
-        <q-btn flat round dense icon="close" color="grey-6" />
-      </div>
-
-      <div class="q-px-md q-pb-md row q-gutter-md no-wrap overflow-auto">
-        <q-card
-          v-for="worker in pendingEmployees"
-          :key="worker.id"
-          flat
-          class="col-shrink bg-white rounded-borders-md pending-card row items-center q-pa-sm"
-        >
-          <q-avatar size="48px">
-            <img :src="worker.avatar" />
-          </q-avatar>
-
-          <div class="column q-ml-md col">
-            <div class="text-subtitle2 text-weight-bold">{{ worker.name }}</div>
-            <div
-              class="text-caption text-grey-6 ellipsis"
-              style="max-width: 140px"
-            >
-              {{ worker.description }}
-            </div>
-          </div>
-
-          <q-chip
-            size="sm"
-            :color="getRoleColor(worker.pendingRole)"
-            text-color="dark"
-            class="role-chip"
-          >
-            >
-            {{ langStore.t(worker.pendingRole || "") }}
-          </q-chip>
-
-          <q-btn flat round dense icon="more_vert" color="grey-5" />
-        </q-card>
-      </div>
-    </q-card>
-
     <!-- Main Content -->
     <div class="col column">
       <!-- Tabs & View Toggles -->
@@ -150,12 +105,16 @@
           <q-td :props="props">
             <div class="row items-center q-gutter-x-sm">
               <q-avatar size="40px">
-                <img :src="props.row.avatar" />
+                <img
+                  :src="
+                    props.row.avatar || 'https://cdn.quasar.dev/img/avatar.png'
+                  "
+                />
               </q-avatar>
               <div class="column">
                 <span class="text-weight-bold">{{ props.row.name }}</span>
                 <span class="text-caption text-grey-6">{{
-                  langStore.t(props.row.role)
+                  props.row.role
                 }}</span>
               </div>
             </div>
@@ -185,14 +144,18 @@
               <div class="row items-start justify-between q-mb-sm">
                 <div class="row items-center q-gutter-x-sm">
                   <q-avatar size="48px">
-                    <img :src="worker.avatar" />
+                    <img
+                      :src="
+                        worker.avatar || 'https://cdn.quasar.dev/img/avatar.png'
+                      "
+                    />
                   </q-avatar>
                   <div>
                     <div class="text-subtitle2 text-weight-bold">
                       {{ worker.name }}
                     </div>
                     <div class="text-caption text-grey-6">
-                      {{ langStore.t(worker.role) }}
+                      {{ worker.role }}
                     </div>
                   </div>
                 </div>
@@ -206,7 +169,7 @@
                 </div>
                 <div class="row items-center">
                   <q-icon name="phone" size="xs" class="q-mr-xs" />
-                  {{ worker.phone }}
+                  {{ worker.phoneNum || worker.phone }}
                 </div>
               </div>
             </q-card>
@@ -226,15 +189,6 @@
 
         <q-card-section class="q-pt-md">
           <q-form @submit="handleAddWorker" class="q-gutter-md">
-            <!-- Firebase UID -->
-            <q-input
-              v-model="newWorker.firebaseUID"
-              :label="langStore.t('Firebase UID') + ' *'"
-              outlined
-              dense
-              :rules="[(val) => !!val || 'Field is required']"
-            />
-
             <!-- Email -->
             <q-input
               v-model="newWorker.email"
@@ -245,6 +199,20 @@
               :rules="[
                 (val) => !!val || 'Field is required',
                 (val) => /.+@.+\..+/.test(val) || 'Invalid email',
+              ]"
+            />
+
+            <!-- Password -->
+            <q-input
+              v-model="newWorker.password"
+              :label="langStore.t('Password') + ' *'"
+              type="password"
+              outlined
+              dense
+              :rules="[
+                (val) => !!val || 'Field is required',
+                (val) =>
+                  val.length >= 6 || 'Password must be at least 6 characters',
               ]"
             />
 
@@ -352,13 +320,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import {
-  getEmployees,
-  getPendingEmployees,
-  Employee,
-} from "../services/mock/employeeController";
 import { useLanguageStore } from "../stores/language";
-import { registerEmployee, RegisterEmployeeDto } from "../services/api";
+import {
+  registerEmployee,
+  RegisterEmployeeDto,
+  getEmployees as getEmployeesFromAPI,
+} from "../services/api";
+import { createFirebaseUser } from "../services/firebase";
 import { useQuasar } from "quasar";
 
 const langStore = useLanguageStore();
@@ -366,14 +334,19 @@ const $q = useQuasar();
 
 const search = ref("");
 const viewMode = ref<"list" | "grid">("list");
-const employees = ref<Employee[]>([]);
-const pendingEmployees = ref<Employee[]>([]);
+const employees = ref<any[]>([]);
 const showAddWorkerDialog = ref(false);
 const isSubmitting = ref(false);
 
-const newWorker = ref<RegisterEmployeeDto>({
+// הרחבת ה-DTO עם שדה סיסמה (רק לשימוש מקומי)
+interface LocalEmployeeDto extends RegisterEmployeeDto {
+  password: string;
+}
+
+const newWorker = ref<LocalEmployeeDto>({
   firebaseUID: "",
   email: "",
+  password: "",
   firstName: "",
   lastName: "",
   dob: "",
@@ -388,12 +361,15 @@ const newWorker = ref<RegisterEmployeeDto>({
 const filteredEmployees = computed(() => {
   if (!search.value) return employees.value;
   const term = search.value.toLowerCase();
-  return employees.value.filter(
-    (e) =>
-      e.name.toLowerCase().includes(term) ||
+  return employees.value.filter((e) => {
+    const fullName = `${e.firstName} ${e.lastName}`.toLowerCase();
+    return (
+      fullName.includes(term) ||
       e.email.toLowerCase().includes(term) ||
-      e.role.toLowerCase().includes(term),
-  );
+      e.role.toLowerCase().includes(term) ||
+      e.phoneNum.toLowerCase().includes(term)
+    );
+  });
 });
 
 const columns = computed(() => [
@@ -410,8 +386,44 @@ const columns = computed(() => [
 ]);
 
 onMounted(async () => {
-  employees.value = await getEmployees();
-  pendingEmployees.value = await getPendingEmployees();
+  try {
+    // קבלת עובדים אמיתיים מהשרת
+    const employeesData = await getEmployeesFromAPI();
+
+    // מיפוי הנתונים מהשרת לפורמט של הקומפוננטה
+    employees.value = employeesData.map((emp: any) => ({
+      id: emp.firebaseUID,
+      firebaseUID: emp.firebaseUID,
+      name: `${emp.firstName} ${emp.lastName}`,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email,
+      phone: emp.phoneNum,
+      phoneNum: emp.phoneNum,
+      role: emp.role,
+      avatar: emp.picture_URL || "https://cdn.quasar.dev/img/avatar.png",
+      picture_URL: emp.picture_URL,
+      dob: emp.dob,
+      costPerHour: emp.costPerHour,
+      filesLink: emp.filesLink,
+      uid: emp.uid,
+      companyID: emp.companyID,
+      companyName: emp.companyName,
+      firebaseUID_Manager: emp.firebaseUID_Manager,
+      managerName: emp.managerName,
+      created_at: emp.created_at,
+    }));
+
+    console.log("✅ עובדים נטענו בהצלחה:", employees.value);
+  } catch (error) {
+    console.error("❌ שגיאה בטעינת עובדים:", error);
+    $q.notify({
+      type: "negative",
+      message: langStore.t("Failed to load employees"),
+      position: "top",
+      timeout: 3000,
+    });
+  }
 });
 
 const getRoleColor = (role?: string) => {
@@ -432,14 +444,36 @@ const getSkillColor = (skill: string) => {
 const handleAddWorker = async () => {
   isSubmitting.value = true;
   try {
-    // המרת התאריך לפורמט ISO
+    // שלב 1: יצירת משתמש ב-Firebase Authentication
+    // הפונקציה מחזירה את ה-UID ושומרת על המנהל כמשתמש מחובר
+    console.log("🔐 יוצר משתמש ב-Firebase...");
+    const firebaseUID = await createFirebaseUser(
+      newWorker.value.email,
+      newWorker.value.password,
+    );
+
+    console.log("✅ משתמש נוצר ב-Firebase עם UID:", firebaseUID);
+
+    // שלב 2: הכנת הנתונים לשליחה לשרת (ללא סיסמה!)
     const dobISO = new Date(newWorker.value.dob).toISOString();
 
     const dto: RegisterEmployeeDto = {
-      ...newWorker.value,
+      firebaseUID: firebaseUID, // שימוש ב-UID שנוצר ב-Firebase
+      email: newWorker.value.email,
+      firstName: newWorker.value.firstName,
+      lastName: newWorker.value.lastName,
       dob: dobISO,
+      phoneNum: newWorker.value.phoneNum,
+      picture_URL: newWorker.value.picture_URL,
+      role: newWorker.value.role,
+      costPerHour: newWorker.value.costPerHour,
+      filesLink: newWorker.value.filesLink,
+      uid: newWorker.value.uid,
     };
 
+    // שלב 3: שליחת הנתונים לשרת (ללא הסיסמה!)
+    // המנהל עדיין מחובר ולכן הטוקן שלו נשלח
+    console.log("📤 שולח נתוני עובד לשרת...");
     await registerEmployee(dto);
 
     // הצגת הודעת הצלחה
@@ -454,8 +488,30 @@ const handleAddWorker = async () => {
     showAddWorkerDialog.value = false;
     resetForm();
 
-    // רענון רשימת העובדים
-    employees.value = await getEmployees();
+    // רענון רשימת העובדים מהשרת
+    const employeesData = await getEmployeesFromAPI();
+    employees.value = employeesData.map((emp: any) => ({
+      id: emp.firebaseUID,
+      firebaseUID: emp.firebaseUID,
+      name: `${emp.firstName} ${emp.lastName}`,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email,
+      phone: emp.phoneNum,
+      phoneNum: emp.phoneNum,
+      role: emp.role,
+      avatar: emp.picture_URL || "https://cdn.quasar.dev/img/avatar.png",
+      picture_URL: emp.picture_URL,
+      dob: emp.dob,
+      costPerHour: emp.costPerHour,
+      filesLink: emp.filesLink,
+      uid: emp.uid,
+      companyID: emp.companyID,
+      companyName: emp.companyName,
+      firebaseUID_Manager: emp.firebaseUID_Manager,
+      managerName: emp.managerName,
+      created_at: emp.created_at,
+    }));
   } catch (error: any) {
     console.error("Error adding worker:", error);
     $q.notify({
@@ -473,6 +529,7 @@ const resetForm = () => {
   newWorker.value = {
     firebaseUID: "",
     email: "",
+    password: "",
     firstName: "",
     lastName: "",
     dob: "",

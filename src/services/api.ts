@@ -114,7 +114,47 @@ export async function registerEmployee(dto: RegisterEmployeeDto): Promise<any> {
   }
 }
 
+/**
+ * קבלת כל העובדים של החברה
+ */
+export async function getEmployees(): Promise<any[]> {
+  const authStore = useAuthStore();
+
+  if (!authStore.token) {
+    console.error("❌ אין טוקן זמין");
+    throw new Error("No authentication token available");
+  }
+
+  try {
+    console.log("🚀 שולח בקשה לקבלת עובדים...");
+
+    const response = await fetch(`${API_BASE_URL}/api/Employees`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${authStore.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("📡 סטטוס תשובה:", response.status);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("✅ עובדים התקבלו בהצלחה:", data);
+      return data;
+    } else {
+      const errorText = await response.text();
+      console.error("❌ שגיאה מהשרת:", response.status, errorText);
+      throw new Error(errorText || "Failed to fetch employees");
+    }
+  } catch (err: any) {
+    console.error("❌ שגיאה בחיבור לשרת:", err);
+    throw err;
+  }
+}
+
 export default {
   testToken,
   registerEmployee,
+  getEmployees,
 };
