@@ -318,6 +318,67 @@
                 {{ selectedEmployee.firebaseUID }}
               </div>
             </div>
+
+            <!-- Employee Files from Firebase -->
+            <div class="col-12">
+              <q-separator class="q-my-md" />
+              <div class="text-subtitle2 text-weight-medium q-mb-sm">
+                {{ langStore.t("Employee Files") }}
+              </div>
+
+              <div
+                v-if="selectedEmployeeFiles.length === 0"
+                class="text-grey-6 text-caption"
+              >
+                {{ langStore.t("No files uploaded") }}
+              </div>
+
+              <div v-else class="row q-col-gutter-sm">
+                <div
+                  v-for="file in selectedEmployeeFiles"
+                  :key="file.fullPath"
+                  class="col-12"
+                >
+                  <q-card flat bordered class="q-pa-sm">
+                    <div class="row items-center">
+                      <q-icon
+                        name="description"
+                        size="sm"
+                        color="primary"
+                        class="q-mr-sm"
+                      />
+                      <div class="col">
+                        <div class="text-body2">
+                          {{ getFileName(file.name) }}
+                        </div>
+                      </div>
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="download"
+                        color="primary"
+                        size="sm"
+                        @click="downloadFile(file.url, file.name)"
+                      >
+                        <q-tooltip>{{ langStore.t("Download") }}</q-tooltip>
+                      </q-btn>
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="visibility"
+                        color="primary"
+                        size="sm"
+                        @click="openFile(file.url)"
+                      >
+                        <q-tooltip>{{ langStore.t("View") }}</q-tooltip>
+                      </q-btn>
+                    </div>
+                  </q-card>
+                </div>
+              </div>
+            </div>
           </div>
         </q-card-section>
 
@@ -442,6 +503,48 @@
               dense
             />
 
+            <!-- Employee Files Upload -->
+            <div class="q-mt-md">
+              <div class="text-caption text-grey-7 q-mb-sm">
+                {{ langStore.t("Employee Files") }}
+              </div>
+              <q-file
+                v-model="employeeFiles"
+                multiple
+                outlined
+                dense
+                counter
+                max-files="10"
+                :label="langStore.t('Drag files here or click to select')"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              >
+                <template v-slot:prepend>
+                  <q-icon name="attach_file" />
+                </template>
+                <template v-slot:hint>
+                  {{ langStore.t("PDF, Word, or Image files (max 10 files)") }}
+                </template>
+              </q-file>
+
+              <!-- Files Preview -->
+              <div
+                v-if="employeeFiles && employeeFiles.length > 0"
+                class="q-mt-sm"
+              >
+                <q-chip
+                  v-for="(file, index) in employeeFiles"
+                  :key="index"
+                  removable
+                  @remove="removeFile(index)"
+                  color="primary"
+                  text-color="white"
+                  icon="description"
+                >
+                  {{ file.name }}
+                </q-chip>
+              </div>
+            </div>
+
             <!-- UID (Optional) -->
             <q-input
               v-model="newWorker.uid"
@@ -480,7 +583,11 @@ import {
   RegisterEmployeeDto,
   getEmployees as getEmployeesFromAPI,
 } from "../services/api";
-import { createFirebaseUser } from "../services/firebase";
+import {
+  createFirebaseUser,
+  uploadEmployeeFiles,
+  getEmployeeFiles,
+} from "../services/firebase";
 import { useQuasar } from "quasar";
 
 const langStore = useLanguageStore();
@@ -492,7 +599,9 @@ const employees = ref<any[]>([]);
 const showAddWorkerDialog = ref(false);
 const showEmployeeDetailsDialog = ref(false);
 const selectedEmployee = ref<any>(null);
+const selectedEmployeeFiles = ref<any[]>([]);
 const isSubmitting = ref(false);
+const employeeFiles = ref<File[] | null>(null);
 
 // הרחבת ה-DTO עם שדה סיסמה (רק לשימוש מקומי)
 interface LocalEmployeeDto extends RegisterEmployeeDto {
@@ -632,6 +741,24 @@ const handleAddWorker = async () => {
     console.log("📤 שולח נתוני עובד לשרת...");
     await registerEmployee(dto);
 
+    // שלב 4: העלאת קבצים ל-Firebase Storage (אם יש)
+    if (employeeFiles.value && employeeFiles.value.length > 0) {
+      console.log("📤 מעלה קבצים ל-Firebase Storage...");
+      try {
+        await uploadEmployeeFiles(firebaseUID, employeeFiles.value);
+        console.log("✅ קבצים הועלו בהצלחה");
+      } catch (fileError) {
+        console.error("⚠️ שגיאה בהעלאת קבצים:", fileError);
+        // לא נכשיל את כל התהליך בגלל שגיאה בקבצים
+        $q.notify({
+          type: "warning",
+          message: langStore.t("Employee added but files upload failed"),
+          position: "top",
+          timeout: 3000,
+        });
+      }
+    }
+
     // הצגת הודעת הצלחה
     $q.notify({
       type: "positive",
@@ -696,12 +823,28 @@ const resetForm = () => {
     filesLink: "",
     uid: "",
   };
+  employeeFiles.value = null;
+};
+
+// הסרת קבץ מהרשימה
+const removeFile = (index: number) => {
+  if (employeeFiles.value) {
+    employeeFiles.value.splice(index, 1);
+  }
 };
 
 // פתיחת דיאלוג פרטי עובד
-const openEmployeeDetails = (employee: any) => {
+const openEmployeeDetails = async (employee: any) => {
   selectedEmployee.value = employee;
   showEmployeeDetailsDialog.value = true;
+
+  // טעינת קבצים של העובד מ-Firebase
+  try {
+    selectedEmployeeFiles.value = await getEmployeeFiles(employee.firebaseUID);
+  } catch (error) {
+    console.error("Error loading employee files:", error);
+    selectedEmployeeFiles.value = [];
+  }
 };
 
 // פורמט תאריך
@@ -713,6 +856,32 @@ const formatDate = (dateString: string) => {
     month: "2-digit",
     day: "2-digit",
   });
+};
+
+// ניקוי שם קבץ (הסרת timestamp)
+const getFileName = (fullName: string) => {
+  // הסרת ה-timestamp מתחילת השם
+  const parts = fullName.split("_");
+  if (parts.length > 1) {
+    return parts.slice(1).join("_");
+  }
+  return fullName;
+};
+
+// הורדת קבץ
+const downloadFile = (url: string, fileName: string) => {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = getFileName(fileName);
+  link.target = "_blank";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+// פתיחת קבץ בטאב חדש
+const openFile = (url: string) => {
+  window.open(url, "_blank");
 };
 </script>
 

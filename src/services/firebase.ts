@@ -7,6 +7,14 @@ import {
   signInWithCustomToken,
   updateCurrentUser,
 } from "firebase/auth";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  listAll,
+  deleteObject,
+} from "firebase/storage";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -26,6 +34,9 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase Authentication and get a reference to the service
 export const auth = getAuth(app);
+
+// Initialize Firebase Storage
+export const storage = getStorage(app);
 
 /**
  * יצירת משתמש חדש ב-Firebase Authentication מבלי לשנות את המשתמש המחובר הנוכחי
@@ -74,6 +85,100 @@ export async function createFirebaseUser(
     }
 
     throw new Error(error.message || "Failed to create Firebase user");
+  }
+}
+
+/**
+ * העלאת קבצים של עובד ל-Firebase Storage
+ * @param employeeUID - ה-UID של העובד
+ * @param files - מערך של קבצים להעלאה
+ * @returns מערך של URLs של הקבצים שהועלו
+ */
+export async function uploadEmployeeFiles(
+  employeeUID: string,
+  files: File[],
+): Promise<string[]> {
+  try {
+    console.log(`📤 מעלה ${files.length} קבצים לעובד ${employeeUID}...`);
+
+    const uploadPromises = files.map(async (file) => {
+      // יצירת נתיב ייחודי לכל קבץ
+      const timestamp = Date.now();
+      const fileName = `${timestamp}_${file.name}`;
+      const fileRef = storageRef(
+        storage,
+        `employees/${employeeUID}/files/${fileName}`,
+      );
+
+      // העלאת הקבץ
+      await uploadBytes(fileRef, file);
+
+      // קבלת ה-URL להורדה
+      const downloadURL = await getDownloadURL(fileRef);
+      console.log(`✅ קבץ הועלה: ${file.name}`);
+
+      return downloadURL;
+    });
+
+    const urls = await Promise.all(uploadPromises);
+    console.log(`✅ כל הקבצים הועלו בהצלחה`);
+    return urls;
+  } catch (error: any) {
+    console.error("❌ שגיאה בהעלאת קבצים:", error);
+    throw new Error(error.message || "Failed to upload files");
+  }
+}
+
+/**
+ * קבלת כל הקבצים של עובד מ-Firebase Storage
+ * @param employeeUID - ה-UID של העובד
+ * @returns מערך של אובייקטים עם שם הקבץ וה-URL שלו
+ */
+export async function getEmployeeFiles(
+  employeeUID: string,
+): Promise<{ name: string; url: string; fullPath: string }[]> {
+  try {
+    console.log(`📥 מושך קבצים של עובד ${employeeUID}...`);
+
+    const filesRef = storageRef(storage, `employees/${employeeUID}/files`);
+    const filesList = await listAll(filesRef);
+
+    const filesPromises = filesList.items.map(async (itemRef) => {
+      const url = await getDownloadURL(itemRef);
+      return {
+        name: itemRef.name,
+        url: url,
+        fullPath: itemRef.fullPath,
+      };
+    });
+
+    const files = await Promise.all(filesPromises);
+    console.log(`✅ נמצאו ${files.length} קבצים`);
+    return files;
+  } catch (error: any) {
+    // אם התיקייה לא קיימת, זה לא שגיאה
+    if (error.code === "storage/object-not-found") {
+      console.log(`ℹ️ לא נמצאו קבצים לעובד ${employeeUID}`);
+      return [];
+    }
+    console.error("❌ שגיאה בקבלת קבצים:", error);
+    throw new Error(error.message || "Failed to get files");
+  }
+}
+
+/**
+ * מחיקת קבץ של עובד מ-Firebase Storage
+ * @param filePath - הנתיב המלא של הקבץ
+ */
+export async function deleteEmployeeFile(filePath: string): Promise<void> {
+  try {
+    console.log(`🗑️ מוחק קבץ: ${filePath}...`);
+    const fileRef = storageRef(storage, filePath);
+    await deleteObject(fileRef);
+    console.log(`✅ קבץ נמחק בהצלחה`);
+  } catch (error: any) {
+    console.error("❌ שגיאה במחיקת קבץ:", error);
+    throw new Error(error.message || "Failed to delete file");
   }
 }
 
