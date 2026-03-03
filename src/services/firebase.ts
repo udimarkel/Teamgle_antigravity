@@ -6,6 +6,7 @@ import {
   UserCredential,
   signInWithCustomToken,
   updateCurrentUser,
+  deleteUser,
 } from "firebase/auth";
 import {
   getStorage,
@@ -179,6 +180,140 @@ export async function deleteEmployeeFile(filePath: string): Promise<void> {
   } catch (error: any) {
     console.error("❌ שגיאה במחיקת קבץ:", error);
     throw new Error(error.message || "Failed to delete file");
+  }
+}
+
+/**
+ * העלאת תמונת פרופיל של עובד ל-Firebase Storage
+ * @param employeeUID - ה-UID של העובד
+ * @param imageFile - קובץ התמונה
+ * @returns URL של התמונה שהועלתה
+ */
+export async function uploadEmployeeProfilePicture(
+  employeeUID: string,
+  imageFile: File,
+): Promise<string> {
+  try {
+    console.log(`📤 מעלה תמונת פרופיל לעובד ${employeeUID}...`);
+
+    // יצירת נתיב לתמונת הפרופיל
+    const fileExtension = imageFile.name.split(".").pop();
+    const fileName = `profile.${fileExtension}`;
+    const fileRef = storageRef(
+      storage,
+      `employees/${employeeUID}/profile/${fileName}`,
+    );
+
+    // העלאת התמונה
+    await uploadBytes(fileRef, imageFile);
+
+    // קבלת ה-URL להורדה
+    const downloadURL = await getDownloadURL(fileRef);
+    console.log(`✅ תמונת פרופיל הועלתה בהצלחה`);
+
+    return downloadURL;
+  } catch (error: any) {
+    console.error("❌ שגיאה בהעלאת תמונת פרופיל:", error);
+    throw new Error(error.message || "Failed to upload profile picture");
+  }
+}
+
+/**
+ * קבלת תמונת פרופיל של עובד מ-Firebase Storage
+ * @param employeeUID - ה-UID של העובד
+ * @returns URL של התמונה או null אם לא קיימת
+ */
+export async function getEmployeeProfilePicture(
+  employeeUID: string,
+): Promise<string | null> {
+  try {
+    const profileRef = storageRef(storage, `employees/${employeeUID}/profile`);
+    const filesList = await listAll(profileRef);
+
+    // אם יש קובץ profile, נחזיר את ה-URL שלו
+    if (filesList.items.length > 0) {
+      const profileFile = filesList.items[0]; // לוקחים את הקובץ הראשון
+      const url = await getDownloadURL(profileFile);
+      return url;
+    }
+
+    return null;
+  } catch (error: any) {
+    // אם התיקייה לא קיימת, זה לא שגיאה
+    if (error.code === "storage/object-not-found") {
+      return null;
+    }
+    console.error("❌ שגיאה בקבלת תמונת פרופיל:", error);
+    return null;
+  }
+}
+
+/**
+ * מחיקת כל הקבצים של עובד מ-Firebase Storage
+ * @param employeeUID - ה-UID של העובד ב-Firebase
+ */
+export async function deleteAllEmployeeFiles(
+  employeeUID: string,
+): Promise<void> {
+  try {
+    console.log(`🗑️ מוחק את כל הקבצים של העובד ${employeeUID}...`);
+
+    // מחיקת קבצי העובד
+    const filesRef = storageRef(storage, `employees/${employeeUID}/files`);
+    try {
+      const filesList = await listAll(filesRef);
+      const deleteFilesPromises = filesList.items.map((itemRef) =>
+        deleteObject(itemRef),
+      );
+      await Promise.all(deleteFilesPromises);
+      console.log(`✅ נמחקו ${filesList.items.length} קבצים`);
+    } catch (error: any) {
+      if (error.code !== "storage/object-not-found") {
+        console.error("⚠️ שגיאה במחיקת קבצים:", error);
+      }
+    }
+
+    // מחיקת תמונת הפרופיל
+    const profileRef = storageRef(storage, `employees/${employeeUID}/profile`);
+    try {
+      const profileList = await listAll(profileRef);
+      const deleteProfilePromises = profileList.items.map((itemRef) =>
+        deleteObject(itemRef),
+      );
+      await Promise.all(deleteProfilePromises);
+      console.log(`✅ נמחקה תמונת הפרופיל`);
+    } catch (error: any) {
+      if (error.code !== "storage/object-not-found") {
+        console.error("⚠️ שגיאה במחיקת תמונת פרופיל:", error);
+      }
+    }
+
+    console.log(`✅ כל הקבצים של העובד ${employeeUID} נמחקו בהצלחה`);
+  } catch (error: any) {
+    console.error("❌ שגיאה במחיקת קבצי העובד:", error);
+    throw error;
+  }
+}
+
+/**
+ * מחיקת משתמש מ-Firebase Authentication
+ * הערה: פונקציה זו דורשת שהמשתמש יהיה מחובר כרגע
+ * במקרה של מחיקת עובד, השרת צריך לטפל במחיקה דרך Firebase Admin SDK
+ * @param employeeUID - ה-UID של העובד ב-Firebase
+ */
+export async function deleteFirebaseUser(employeeUID: string): Promise<void> {
+  try {
+    console.log(`🗑️ מוחק משתמש מ-Firebase Authentication: ${employeeUID}`);
+
+    // הערה: מחיקת משתמש מ-Firebase Authentication דורשת Firebase Admin SDK בצד השרת
+    // הקוד הזה לא יעבוד מהצד של הלקוח מסיבות אבטחה
+    // השרת צריך לטפל במחיקה דרך Firebase Admin SDK
+
+    console.log("⚠️ מחיקת משתמש מ-Firebase Authentication צריכה להתבצע בשרת");
+    console.log("💡 השרת צריך להשתמש ב-Firebase Admin SDK למחיקת המשתמש");
+  } catch (error: any) {
+    console.error("❌ שגיאה במחיקת משתמש מ-Firebase:", error);
+    throw error;
   }
 }
 

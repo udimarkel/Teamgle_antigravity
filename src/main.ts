@@ -1,7 +1,7 @@
 console.log("🚀 main.ts נטען!");
 
 import { createApp } from "vue";
-import { Quasar, Notify, Loading } from "quasar";
+import { Quasar, Notify, Loading, Dialog } from "quasar";
 
 // Import Icon libraries
 import "@quasar/extras/material-icons/material-icons.css";
@@ -27,6 +27,7 @@ myApp.use(Quasar, {
   plugins: {
     Notify,
     Loading,
+    Dialog,
   },
 });
 

@@ -202,6 +202,28 @@
                   "
                 />
               </q-avatar>
+
+              <!-- Upload Profile Picture Button -->
+              <div class="q-mt-sm">
+                <q-btn
+                  flat
+                  dense
+                  color="primary"
+                  icon="photo_camera"
+                  :label="langStore.t('Change Photo')"
+                  @click="profilePictureInput?.click()"
+                  :loading="isUploadingProfilePicture"
+                  :disable="isUploadingProfilePicture"
+                  size="sm"
+                />
+                <input
+                  ref="profilePictureInput"
+                  type="file"
+                  accept="image/*"
+                  style="display: none"
+                  @change="handleProfilePictureChange"
+                />
+              </div>
             </div>
 
             <!-- Full Name -->
@@ -382,11 +404,27 @@
           </div>
         </q-card-section>
 
-        <q-card-actions align="right">
+        <q-card-actions align="right" class="q-gutter-sm">
+          <q-btn
+            flat
+            :label="langStore.t('Delete')"
+            color="negative"
+            icon="delete"
+            @click="handleDeleteEmployee"
+            :loading="isDeleting"
+            :disable="isDeleting"
+          />
+          <q-btn
+            flat
+            :label="langStore.t('Edit')"
+            color="primary"
+            icon="edit"
+            @click="openEditDialog"
+          />
           <q-btn
             flat
             :label="langStore.t('Close')"
-            color="primary"
+            color="grey-7"
             v-close-popup
           />
         </q-card-actions>
@@ -466,14 +504,6 @@
               outlined
               dense
               :rules="[(val) => !!val || 'Field is required']"
-            />
-
-            <!-- Picture URL (Optional) -->
-            <q-input
-              v-model="newWorker.picture_URL"
-              :label="langStore.t('Picture URL')"
-              outlined
-              dense
             />
 
             <!-- Role -->
@@ -564,6 +594,108 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- Edit Employee Dialog -->
+    <q-dialog v-model="showEditEmployeeDialog" persistent>
+      <q-card style="min-width: 500px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">{{ langStore.t("Edit Employee") }}</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md">
+          <q-form @submit="handleEditEmployee" class="q-gutter-md">
+            <!-- Email -->
+            <q-input
+              v-model="editWorker.email"
+              :label="langStore.t('Email')"
+              type="email"
+              outlined
+              dense
+              :rules="[
+                (val) => !val || /.+@.+\..+/.test(val) || 'Invalid email',
+              ]"
+            />
+
+            <!-- First Name -->
+            <q-input
+              v-model="editWorker.firstName"
+              :label="langStore.t('First Name')"
+              outlined
+              dense
+            />
+
+            <!-- Last Name -->
+            <q-input
+              v-model="editWorker.lastName"
+              :label="langStore.t('Last Name')"
+              outlined
+              dense
+            />
+
+            <!-- Date of Birth -->
+            <q-input
+              v-model="editWorker.dob"
+              :label="langStore.t('Date of Birth')"
+              type="date"
+              outlined
+              dense
+            />
+
+            <!-- Phone Number -->
+            <q-input
+              v-model="editWorker.phoneNum"
+              :label="langStore.t('Phone Number')"
+              outlined
+              dense
+            />
+
+            <!-- Role -->
+            <q-input
+              v-model="editWorker.role"
+              :label="langStore.t('Role')"
+              outlined
+              dense
+            />
+
+            <!-- Cost Per Hour -->
+            <q-input
+              v-model.number="editWorker.costPerHour"
+              :label="langStore.t('Cost Per Hour')"
+              type="number"
+              outlined
+              dense
+              :rules="[(val) => !val || val > 0 || 'Must be greater than 0']"
+            />
+
+            <!-- UID -->
+            <q-input
+              v-model="editWorker.uid"
+              :label="langStore.t('UID')"
+              outlined
+              dense
+            />
+
+            <div class="row justify-end q-gutter-sm q-mt-md">
+              <q-btn
+                :label="langStore.t('Cancel')"
+                color="grey-7"
+                flat
+                v-close-popup
+              />
+              <q-btn
+                :label="langStore.t('Save Changes')"
+                type="submit"
+                color="primary"
+                unelevated
+                :loading="isSubmitting"
+              />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -574,11 +706,18 @@ import {
   registerEmployee,
   RegisterEmployeeDto,
   getEmployees as getEmployeesFromAPI,
+  updateEmployee,
+  deleteEmployee,
+  UpdateEmployeeDto,
 } from "../services/api";
 import {
   createFirebaseUser,
   uploadEmployeeFiles,
   getEmployeeFiles,
+  uploadEmployeeProfilePicture,
+  getEmployeeProfilePicture,
+  deleteAllEmployeeFiles,
+  deleteFirebaseUser,
 } from "../services/firebase";
 import { useQuasar } from "quasar";
 
@@ -590,10 +729,12 @@ const viewMode = ref<"list" | "grid">("list");
 const employees = ref<any[]>([]);
 const showAddWorkerDialog = ref(false);
 const showEmployeeDetailsDialog = ref(false);
+const showEditEmployeeDialog = ref(false);
 const selectedEmployee = ref<any>(null);
 const selectedEmployeeFiles = ref<any[]>([]);
 const isSubmitting = ref(false);
 const employeeFiles = ref<File[] | null>(null);
+const isDeleting = ref(false);
 
 // הרחבת ה-DTO עם שדה סיסמה (רק לשימוש מקומי)
 interface LocalEmployeeDto extends RegisterEmployeeDto {
@@ -608,10 +749,19 @@ const newWorker = ref<LocalEmployeeDto>({
   lastName: "",
   dob: "",
   phoneNum: "",
-  picture_URL: "",
   role: "",
   costPerHour: 0,
-  filesLink: "",
+  uid: "",
+});
+
+const editWorker = ref<UpdateEmployeeDto>({
+  email: "",
+  firstName: "",
+  lastName: "",
+  dob: "",
+  phoneNum: "",
+  role: "",
+  costPerHour: 0,
   uid: "",
 });
 
@@ -648,7 +798,7 @@ onMounted(async () => {
     const employeesData = await getEmployeesFromAPI();
 
     // מיפוי הנתונים מהשרת לפורמט של הקומפוננטה
-    employees.value = employeesData.map((emp: any) => ({
+    const mappedEmployees = employeesData.map((emp: any) => ({
       id: emp.firebaseUID,
       firebaseUID: emp.firebaseUID,
       name: `${emp.firstName} ${emp.lastName}`,
@@ -670,6 +820,24 @@ onMounted(async () => {
       managerName: emp.managerName,
       created_at: emp.created_at,
     }));
+
+    employees.value = mappedEmployees;
+
+    // טעינת תמונות פרופיל מ-Firebase Storage
+    console.log("📸 טוען תמונות פרופיל מ-Firebase Storage...");
+    for (const employee of employees.value) {
+      try {
+        const profilePicture = await getEmployeeProfilePicture(
+          employee.firebaseUID,
+        );
+        if (profilePicture) {
+          employee.avatar = profilePicture;
+          employee.picture_URL = profilePicture;
+        }
+      } catch (error) {
+        console.error(`⚠️ לא ניתן לטעון תמונה לעובד ${employee.firebaseUID}`);
+      }
+    }
 
     console.log("✅ עובדים נטענו בהצלחה:", employees.value);
   } catch (error) {
@@ -711,7 +879,7 @@ const handleAddWorker = async () => {
 
     console.log("✅ משתמש נוצר ב-Firebase עם UID:", firebaseUID);
 
-    // שלב 2: הכנת הנתונים לשליחה לשרת (ללא סיסמה!)
+    // שלב 2: הכנת הנתונים לשליחה לשרת (ללא סיסמה, picture_URL, filesLink!)
     const dobISO = new Date(newWorker.value.dob).toISOString();
 
     const dto: RegisterEmployeeDto = {
@@ -721,10 +889,8 @@ const handleAddWorker = async () => {
       lastName: newWorker.value.lastName,
       dob: dobISO,
       phoneNum: newWorker.value.phoneNum,
-      picture_URL: newWorker.value.picture_URL,
       role: newWorker.value.role,
       costPerHour: newWorker.value.costPerHour,
-      filesLink: newWorker.value.filesLink,
       uid: newWorker.value.uid,
     };
 
@@ -765,7 +931,7 @@ const handleAddWorker = async () => {
 
     // רענון רשימת העובדים מהשרת
     const employeesData = await getEmployeesFromAPI();
-    employees.value = employeesData.map((emp: any) => ({
+    const mappedEmployees = employeesData.map((emp: any) => ({
       id: emp.firebaseUID,
       firebaseUID: emp.firebaseUID,
       name: `${emp.firstName} ${emp.lastName}`,
@@ -787,6 +953,23 @@ const handleAddWorker = async () => {
       managerName: emp.managerName,
       created_at: emp.created_at,
     }));
+
+    employees.value = mappedEmployees;
+
+    // טעינת תמונות פרופיל מ-Firebase Storage
+    for (const employee of employees.value) {
+      try {
+        const profilePicture = await getEmployeeProfilePicture(
+          employee.firebaseUID,
+        );
+        if (profilePicture) {
+          employee.avatar = profilePicture;
+          employee.picture_URL = profilePicture;
+        }
+      } catch (error) {
+        // שגיאה בטעינת תמונה - נשאיר את ברירת המחדל
+      }
+    }
   } catch (error: any) {
     console.error("Error adding worker:", error);
     $q.notify({
@@ -809,10 +992,8 @@ const resetForm = () => {
     lastName: "",
     dob: "",
     phoneNum: "",
-    picture_URL: "",
     role: "",
     costPerHour: 0,
-    filesLink: "",
     uid: "",
   };
   employeeFiles.value = null;
@@ -874,6 +1055,205 @@ const downloadFile = (url: string, fileName: string) => {
 // פתיחת קבץ בטאב חדש
 const openFile = (url: string) => {
   window.open(url, "_blank");
+};
+
+// טיפול בהעלאת תמונת פרופיל
+const profilePictureInput = ref<HTMLInputElement | null>(null);
+const isUploadingProfilePicture = ref(false);
+
+const handleProfilePictureChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (!file || !selectedEmployee.value) return;
+
+  // בדיקה שזה תמונה
+  if (!file.type.startsWith("image/")) {
+    $q.notify({
+      type: "negative",
+      message: langStore.t("Please select an image file"),
+      position: "top",
+      timeout: 3000,
+    });
+    return;
+  }
+
+  isUploadingProfilePicture.value = true;
+
+  try {
+    // העלאה ל-Firebase Storage
+    const pictureURL = await uploadEmployeeProfilePicture(
+      selectedEmployee.value.firebaseUID,
+      file,
+    );
+
+    console.log("✅ תמונה הועלתה ל-Firebase Storage:", pictureURL);
+
+    // עדכון התמונה בממשק בלבד (לא בדאטה בייס)
+    selectedEmployee.value.avatar = pictureURL;
+    selectedEmployee.value.picture_URL = pictureURL;
+
+    // עדכון ברשימת העובדים
+    const employeeIndex = employees.value.findIndex(
+      (e) => e.firebaseUID === selectedEmployee.value.firebaseUID,
+    );
+    if (employeeIndex !== -1) {
+      employees.value[employeeIndex].avatar = pictureURL;
+      employees.value[employeeIndex].picture_URL = pictureURL;
+    }
+
+    $q.notify({
+      type: "positive",
+      message: langStore.t("Profile picture updated successfully!"),
+      position: "top",
+      timeout: 2000,
+    });
+  } catch (error: any) {
+    console.error("Error uploading profile picture:", error);
+    $q.notify({
+      type: "negative",
+      message: error.message || langStore.t("Failed to upload profile picture"),
+      position: "top",
+      timeout: 3000,
+    });
+  } finally {
+    isUploadingProfilePicture.value = false;
+    // איפוס ה-input
+    if (target) target.value = "";
+  }
+};
+
+// פתיחת דיאלוג עריכת עובד
+const openEditDialog = () => {
+  if (!selectedEmployee.value) return;
+
+  editWorker.value = {
+    email: selectedEmployee.value.email,
+    firstName: selectedEmployee.value.firstName,
+    lastName: selectedEmployee.value.lastName,
+    dob: selectedEmployee.value.dob,
+    phoneNum: selectedEmployee.value.phoneNum,
+    role: selectedEmployee.value.role,
+    costPerHour: selectedEmployee.value.costPerHour,
+    uid: selectedEmployee.value.uid,
+  };
+
+  showEditEmployeeDialog.value = true;
+};
+
+// עדכון עובד
+const handleEditEmployee = async () => {
+  if (!selectedEmployee.value) return;
+
+  isSubmitting.value = true;
+  try {
+    console.log("🔄 מעדכן עובד...");
+
+    // עדכון בשרת
+    await updateEmployee(selectedEmployee.value.firebaseUID, editWorker.value);
+
+    // עדכון ברשימה המקומית
+    const employeeIndex = employees.value.findIndex(
+      (e) => e.firebaseUID === selectedEmployee.value.firebaseUID,
+    );
+
+    if (employeeIndex !== -1) {
+      employees.value[employeeIndex] = {
+        ...employees.value[employeeIndex],
+        email: editWorker.value.email || employees.value[employeeIndex].email,
+        firstName:
+          editWorker.value.firstName ||
+          employees.value[employeeIndex].firstName,
+        lastName:
+          editWorker.value.lastName || employees.value[employeeIndex].lastName,
+        name: `${editWorker.value.firstName || employees.value[employeeIndex].firstName} ${editWorker.value.lastName || employees.value[employeeIndex].lastName}`,
+        dob: editWorker.value.dob || employees.value[employeeIndex].dob,
+        phoneNum:
+          editWorker.value.phoneNum || employees.value[employeeIndex].phoneNum,
+        phone:
+          editWorker.value.phoneNum || employees.value[employeeIndex].phoneNum,
+        role: editWorker.value.role || employees.value[employeeIndex].role,
+        costPerHour:
+          editWorker.value.costPerHour ||
+          employees.value[employeeIndex].costPerHour,
+        uid: editWorker.value.uid || employees.value[employeeIndex].uid,
+      };
+
+      // עדכון העובד הנבחר
+      selectedEmployee.value = employees.value[employeeIndex];
+    }
+
+    $q.notify({
+      type: "positive",
+      message: langStore.t("Employee updated successfully!"),
+      position: "top",
+      timeout: 2000,
+    });
+
+    showEditEmployeeDialog.value = false;
+  } catch (error: any) {
+    console.error("❌ שגיאה בעדכון עובד:", error);
+    $q.notify({
+      type: "negative",
+      message: error.message || langStore.t("Failed to update employee"),
+      position: "top",
+      timeout: 3000,
+    });
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+// מחיקת עובד
+const handleDeleteEmployee = async () => {
+  if (!selectedEmployee.value) return;
+
+  // בקשת אישור מהמשתמש
+  $q.dialog({
+    title: langStore.t("Confirm Delete"),
+    message: langStore.t(
+      "Are you sure you want to delete this employee? This action cannot be undone.",
+    ),
+    cancel: true,
+    persistent: true,
+  }).onOk(async () => {
+    isDeleting.value = true;
+    try {
+      console.log("🗑️ מוחק עובד...");
+
+      // מחיקת כל הקבצים מ-Firebase Storage
+      await deleteAllEmployeeFiles(selectedEmployee.value.firebaseUID);
+
+      // מחיקה מהשרת (השרת ידאג למחיקת המשתמש מ-Firebase Authentication)
+      await deleteEmployee(selectedEmployee.value.firebaseUID);
+
+      // הסרה מהרשימה המקומית
+      employees.value = employees.value.filter(
+        (e) => e.firebaseUID !== selectedEmployee.value.firebaseUID,
+      );
+
+      $q.notify({
+        type: "positive",
+        message: langStore.t("Employee deleted successfully!"),
+        position: "top",
+        timeout: 2000,
+      });
+
+      // סגירת הדיאלוג
+      showEmployeeDetailsDialog.value = false;
+      selectedEmployee.value = null;
+    } catch (error: any) {
+      console.error("❌ שגיאה במחיקת עובד:", error);
+      $q.notify({
+        type: "negative",
+        message: error.message || langStore.t("Failed to delete employee"),
+        position: "top",
+        timeout: 3000,
+      });
+    } finally {
+      isDeleting.value = false;
+    }
+  });
 };
 </script>
 
